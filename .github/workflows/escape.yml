@@ -1,0 +1,47 @@
+name: escape attempt
+
+# Run it from the Actions tab. Needs one repository secret: LLM_API_KEY.
+
+on:
+  workflow_dispatch:
+    inputs:
+      room:
+        description: Room to escape
+        default: 01-penny-room
+      model:
+        description: Model id at the provider
+        default: gemini-3-flash-preview
+      base_url:
+        description: OpenAI-compatible base URL of the provider
+        default: https://generativelanguage.googleapis.com/v1beta/openai
+      max_attempts:
+        description: Attempts before giving up
+        default: '5'
+
+jobs:
+  escape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Build the agent
+        run: mvn -B -q -f escape-agent/pom.xml package -DskipTests
+      - name: Attempt the escape
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ inputs.model }}
+          LLM_BASE_URL: ${{ inputs.base_url }}
+          ROOM: ${{ inputs.room }}
+          MAX_ATTEMPTS: ${{ inputs.max_attempts }}
+        run: java -jar escape-agent/target/escape-agent.jar --room "$ROOM" --max-attempts "$MAX_ATTEMPTS"
+      - name: Keep the run log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-log
+          path: runs/
+          if-no-files-found: ignore

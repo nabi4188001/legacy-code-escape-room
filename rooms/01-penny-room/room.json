@@ -3,16 +3,13 @@
   "name": "The Penny Room",
   "legacyProblem": "Money stored and calculated as double",
   "module": "rusty-bank",
-  "editable": ["rusty-bank/src/main/java/com/rustybank/RustyBank.java", "rusty-bank/src/main/java/com/rustybank/legacy/**"],
+  "editable": ["rusty-bank/src/main/java/"],
   "locked": [
     "rusty-bank/src/main/java/com/rustybank/TellerTerminal.java",
     "rusty-bank/src/test/java/com/rustybank/rooms/penny/PennyRoomGoldenMasterTest.java",
     "rusty-bank/src/test/java/com/rustybank/rooms/penny/PennyRoomEscapeTest.java"
   ],
-  "commands": {
-    "golden": "mvn -B -f rusty-bank/pom.xml test -Dgroups=golden",
-    "escape": "mvn -B -f rusty-bank/pom.xml test -Dgroups=escape",
-    "verifyLocks": "scripts/verify-locks.sh"
-  },
-  "escapeCondition": "verifyLocks passes, all golden tests pass, all escape tests pass"
+  "goldenTests": "com.rustybank.rooms.penny.PennyRoomGoldenMasterTest",
+  "escapeTests": "com.rustybank.rooms.penny.PennyRoomEscapeTest",
+  "escapeCondition": "locked files untouched, all golden tests pass, all escape tests pass"
 }

@@ -1,0 +1,145 @@
+PLAN: Patching one calculation is not enough: the balances themselves are doubles, so sums, comparisons and splits all drift. I will replace the legacy package with one terminal that keeps every amount as BigDecimal and splits payments in whole cents.
+
+=== FILE: rusty-bank/src/main/java/com/rustybank/RustyBank.java ===
+package com.rustybank;
+
+/**
+ * Front door of Rusty Bank. Every call opens a brand new, empty bank.
+ */
+public final class RustyBank {
+
+    private RustyBank() {
+    }
+
+    public static TellerTerminal openTerminal() {
+        return new ExactTellerTerminal();
+    }
+}
+=== END FILE ===
+
+=== FILE: rusty-bank/src/main/java/com/rustybank/ExactTellerTerminal.java ===
+package com.rustybank;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+/** Teller terminal that keeps every amount as an exact decimal. */
+final class ExactTellerTerminal implements TellerTerminal {
+
+    private static final BigDecimal MONTHS_TIMES_HUNDRED = new BigDecimal("1200");
+
+    private final Map<String, BigDecimal> balances = new LinkedHashMap<>();
+
+    @Override
+    public void openAccount(String accountId) {
+        if (accountId == null || accountId.isBlank()) {
+            throw new IllegalArgumentException("INVALID ACCOUNT ID");
+        }
+        if (balances.containsKey(accountId)) {
+            throw new IllegalStateException("ACCOUNT EXISTS: " + accountId);
+        }
+        balances.put(accountId, BigDecimal.ZERO);
+    }
+
+    @Override
+    public void deposit(String accountId, String amount) {
+        BigDecimal balance = balanceOf(accountId);
+        balances.put(accountId, balance.add(positive(amount)));
+    }
+
+    @Override
+    public void withdraw(String accountId, String amount) {
+        BigDecimal balance = balanceOf(accountId);
+        BigDecimal value = positive(amount);
+        if (value.compareTo(balance) > 0) {
+            throw new IllegalStateException("INSUFFICIENT FUNDS");
+        }
+        balances.put(accountId, balance.subtract(value));
+    }
+
+    @Override
+    public String balance(String accountId) {
+        return format(balanceOf(accountId));
+    }
+
+    @Override
+    public String postMonthlyInterest(String accountId, String annualRatePercent) {
+        BigDecimal balance = balanceOf(accountId);
+        BigDecimal interest = balance.multiply(positive(annualRatePercent))
+                .divide(MONTHS_TIMES_HUNDRED, 2, RoundingMode.HALF_UP);
+        balances.put(accountId, balance.add(interest));
+        return format(interest);
+    }
+
+    @Override
+    public List<String> splitPayment(String fromAccountId, String amount, List<String> payeeIds) {
+        BigDecimal payerBalance = balanceOf(fromAccountId);
+        if (payeeIds == null || payeeIds.isEmpty()) {
+            throw new IllegalArgumentException("NO PAYEES");
+        }
+        for (String payeeId : payeeIds) {
+            balanceOf(payeeId);
+        }
+        BigDecimal total = positive(amount);
+        if (total.compareTo(payerBalance) > 0) {
+            throw new IllegalStateException("INSUFFICIENT FUNDS");
+        }
+        BigDecimal[] parts = total.movePointRight(2).setScale(0, RoundingMode.UNNECESSARY)
+                .divideAndRemainder(BigDecimal.valueOf(payeeIds.size()));
+        long leftoverCents = parts[1].longValueExact();
+
+        balances.put(fromAccountId, payerBalance.subtract(total));
+        List<String> shares = new ArrayList<>();
+        for (int i = 0; i < payeeIds.size(); i++) {
+            BigDecimal cents = i < leftoverCents ? parts[0].add(BigDecimal.ONE) : parts[0];
+            BigDecimal share = cents.movePointLeft(2);
+            balances.merge(payeeIds.get(i), share, BigDecimal::add);
+            shares.add(format(share));
+        }
+        return shares;
+    }
+
+    @Override
+    public String totalHoldings() {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (BigDecimal balance : balances.values()) {
+            sum = sum.add(balance);
+        }
+        return format(sum);
+    }
+
+    private BigDecimal balanceOf(String accountId) {
+        BigDecimal balance = balances.get(accountId);
+        if (balance == null) {
+            throw new IllegalArgumentException("UNKNOWN ACCOUNT: " + accountId);
+        }
+        return balance;
+    }
+
+    private static BigDecimal positive(String amount) {
+        if (amount == null) {
+            throw new IllegalArgumentException("INVALID AMOUNT");
+        }
+        BigDecimal value = new BigDecimal(amount.trim());
+        if (value.signum() <= 0) {
+            throw new IllegalArgumentException("INVALID AMOUNT: " + amount);
+        }
+        return value;
+    }
+
+    private static String format(BigDecimal amount) {
+        return amount.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
+}
+=== END FILE ===
+
+=== DELETE: rusty-bank/src/main/java/com/rustybank/legacy/Account.java ===
+=== DELETE: rusty-bank/src/main/java/com/rustybank/legacy/AccountStore.java ===
+=== DELETE: rusty-bank/src/main/java/com/rustybank/legacy/InterestCalculator.java ===
+=== DELETE: rusty-bank/src/main/java/com/rustybank/legacy/LegacyTellerTerminal.java ===
+=== DELETE: rusty-bank/src/main/java/com/rustybank/legacy/MoneyUtil.java ===
+=== DELETE: rusty-bank/src/main/java/com/rustybank/legacy/PaymentSplitter.java ===

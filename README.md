@@ -27,6 +27,23 @@ project turns that job into something you can watch, score and compare across mo
 - **Locked files** (the tests and the public `TellerTerminal` contract) are
   fingerprinted in each room's `LOCKED.sha256`. Change one and the escape does not count.
 
+## The agent
+
+`escape-agent/` is the prisoner. It is plain Java 21 with no libraries, and it works with
+any model provider that speaks the OpenAI chat protocol.
+
+1. **Look.** It copies the room into a sandbox and runs the tests to see what is broken.
+2. **Ask.** It shows the model the room brief, the locked files, the current code and
+   the failing tests, and asks for whole-file edits.
+3. **Apply.** Edits are only accepted inside the room's editable area. An attempt to
+   rewrite a test, the contract, the build file or the lock fingerprints is refused
+   and reported back to the model.
+4. **Judge.** The real Maven build decides: locks intact, golden green, escape green.
+5. **Retry.** Failures go back to the model, up to a fixed number of attempts.
+
+Every run is written to `runs/<room>/` as JSON: each plan, each file before and after,
+each test result, tokens and timings. That log is what the replay viewer will play back.
+
 ## Try it yourself
 
 You need Java 21 and Maven.
@@ -40,13 +57,30 @@ mvn -f rusty-bank/pom.xml test -Dgroups=golden       # 13 green
 mvn -f rusty-bank/pom.xml test -Dgroups=escape       # 9 red: you are locked in
 ```
 
-Now fix `rusty-bank/src/main` until everything is green.
+Fix `rusty-bank/src/main` by hand until everything is green, or send the agent in:
+
+```bash
+mvn -q -f escape-agent/pom.xml package -DskipTests
+export LLM_API_KEY=your-key
+java -jar escape-agent/target/escape-agent.jar --room 01-penny-room
+```
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `LLM_API_KEY` | none | API key of your provider |
+| `LLM_BASE_URL` | Gemini's OpenAI-compatible endpoint | Any OpenAI-compatible base URL |
+| `LLM_MODEL` | `gemini-3-flash-preview` | Model id at that provider |
+
+`--list-models` prints the model ids your key can use. The agent can also be run from
+the repository's Actions tab with the **escape attempt** workflow, once `LLM_API_KEY`
+is saved as a repository secret.
 
 ## Roadmap
 
 - [x] Rusty Bank and Room 1 with locked tests
-- [ ] The agent loop (read, plan, edit, compile, test, retry) in Java with LangChain4j
-- [ ] Rooms 2 to 4, with every agent step logged
+- [x] The agent loop: look, ask, apply, judge, retry, with a full run log
+- [ ] First recorded escapes of Room 1 by real models
+- [ ] Rooms 2 to 4
 - [ ] Replay viewer: watch any escape attempt in the browser
 - [ ] Boss room and **RustyBench**: a leaderboard of which models escape which rooms, and at what cost
 
