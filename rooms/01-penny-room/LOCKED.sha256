@@ -1,0 +1,3 @@
+f06a539ca0aa8e94327480598d54365701105a2fbc9dbe56619c767d4bdb764c  rusty-bank/src/main/java/com/rustybank/TellerTerminal.java
+f0a4f40261759cc4aafde7819f3e124428fa96fe143d6ec3d07575c10ecec6cf  rusty-bank/src/test/java/com/rustybank/rooms/penny/PennyRoomEscapeTest.java
+37423a0f019b815800aa356061b282770fedee40f3a9693ac059e7d11b587042  rusty-bank/src/test/java/com/rustybank/rooms/penny/PennyRoomGoldenMasterTest.java

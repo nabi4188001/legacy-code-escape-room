@@ -1,0 +1,23 @@
+name: rooms
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  rooms:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Locked files are untouched
+        run: scripts/verify-locks.sh
+      - name: Golden master (must always be green)
+        run: mvn -B -f rusty-bank/pom.xml test -Dgroups=golden
+      - name: Escape tests (red until a room is escaped)
+        continue-on-error: true
+        run: mvn -B -f rusty-bank/pom.xml test -Dgroups=escape
