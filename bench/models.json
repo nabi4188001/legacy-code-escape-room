@@ -1,0 +1,42 @@
+[
+  {
+    "id": "gemini-3-flash-preview",
+    "label": "Gemini 3 Flash (preview)",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3-flash-preview",
+    "secret": "LLM_API_KEY",
+    "system_as_user": false
+  },
+  {
+    "id": "gemini-3.1-flash-lite",
+    "label": "Gemini 3.1 Flash-Lite",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-3.1-flash-lite",
+    "secret": "LLM_API_KEY",
+    "system_as_user": false
+  },
+  {
+    "id": "gemini-2.5-flash-lite",
+    "label": "Gemini 2.5 Flash-Lite",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemini-2.5-flash-lite",
+    "secret": "LLM_API_KEY",
+    "system_as_user": false
+  },
+  {
+    "id": "gemma-4-31b-it",
+    "label": "Gemma 4 31B",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemma-4-31b-it",
+    "secret": "LLM_API_KEY",
+    "system_as_user": true
+  },
+  {
+    "id": "gemma-4-26b-a4b-it",
+    "label": "Gemma 4 26B (4B active)",
+    "base_url": "https://generativelanguage.googleapis.com/v1beta/openai",
+    "model": "gemma-4-26b-a4b-it",
+    "secret": "LLM_API_KEY",
+    "system_as_user": true
+  }
+]

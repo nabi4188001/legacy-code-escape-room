@@ -22,11 +22,22 @@ public final class OpenAiCompatibleModel implements ChatModel {
     private final String baseUrl;
     private final String model;
     private final String apiKey;
+    private final boolean systemAsUser;
     private final HttpClient http = HttpClient.newBuilder()
             .connectTimeout(Duration.ofSeconds(30))
             .build();
 
     public OpenAiCompatibleModel(String baseUrl, String model, String apiKey) {
+        this(baseUrl, model, apiKey, false);
+    }
+
+    /**
+     * @param systemAsUser for models that refuse a system message: the instructions are
+     *                     put at the top of the first user message instead
+     */
+    public OpenAiCompatibleModel(String baseUrl, String model, String apiKey,
+                                 boolean systemAsUser) {
+        this.systemAsUser = systemAsUser;
         this.baseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
         this.model = model;
         this.apiKey = apiKey;
@@ -40,7 +51,7 @@ public final class OpenAiCompatibleModel implements ChatModel {
     @Override
     public Reply chat(List<Message> messages) {
         List<Object> wire = new ArrayList<>();
-        for (Message message : messages) {
+        for (Message message : systemAsUser ? foldSystemIntoUser(messages) : messages) {
             Map<String, Object> m = new LinkedHashMap<>();
             m.put("role", message.role());
             m.put("content", message.content());
@@ -58,6 +69,27 @@ public final class OpenAiCompatibleModel implements ChatModel {
         }
         return new Reply(text, asLong(Json.at(json, "usage", "prompt_tokens")),
                 asLong(Json.at(json, "usage", "completion_tokens")));
+    }
+
+    static List<Message> foldSystemIntoUser(List<Message> messages) {
+        String separator = "\n\n---\n\n";
+        List<String> instructions = new ArrayList<>();
+        List<Message> folded = new ArrayList<>();
+        for (Message message : messages) {
+            if (message.role().equals("system")) {
+                instructions.add(message.content());
+            } else if (!instructions.isEmpty() && message.role().equals("user")) {
+                folded.add(Message.user(String.join(separator, instructions) + separator
+                        + message.content()));
+                instructions.clear();
+            } else {
+                folded.add(message);
+            }
+        }
+        if (!instructions.isEmpty()) {
+            folded.add(0, Message.user(String.join(separator, instructions)));
+        }
+        return folded;
     }
 
     /** Model ids the provider offers, for when a configured model name turns out to be wrong. */

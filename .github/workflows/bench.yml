@@ -1,0 +1,97 @@
+name: bench
+
+# RustyBench. Runs every chosen model through every chosen room, several times, then
+# rebuilds bench/LEADERBOARD.md. Models are listed in bench/models.json; each needs the
+# repository secret named in its "secret" field (models without a key are skipped).
+
+on:
+  workflow_dispatch:
+    inputs:
+      models:
+        description: "Catalogue ids from bench/models.json, comma separated, or 'all'"
+        default: all
+      rooms:
+        description: "Room ids, comma separated, or 'all'"
+        default: all
+      runs:
+        description: Runs per model and room
+        default: '3'
+      max_attempts:
+        description: Attempts per run before giving up
+        default: '5'
+
+permissions:
+  contents: write
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.pick.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: pick
+        env:
+          MODELS: ${{ inputs.models }}
+        run: python3 scripts/bench_plan.py
+
+  bench:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Build the agent
+        run: mvn -B -q -f escape-agent/pom.xml package -DskipTests
+      - name: Run the rooms
+        env:
+          LLM_API_KEY: ${{ secrets[matrix.secret] }}
+          LLM_MODEL: ${{ matrix.model }}
+          LLM_BASE_URL: ${{ matrix.base_url }}
+          LLM_SYSTEM_AS_USER: ${{ matrix.system_as_user }}
+          ROOMS: ${{ inputs.rooms }}
+          RUNS: ${{ inputs.runs }}
+          MAX_ATTEMPTS: ${{ inputs.max_attempts }}
+        run: scripts/bench_run.sh
+      - name: Keep the run logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: runs-${{ matrix.id }}
+          path: runs/
+          if-no-files-found: ignore
+
+  aggregate:
+    needs: bench
+    if: always() && needs.plan.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: runs-*
+          path: runs
+          merge-multiple: true
+      - name: Rebuild the leaderboard
+        run: python3 scripts/leaderboard.py
+      - name: Commit the logs and the leaderboard
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add runs/ bench/
+          if git diff --cached --quiet; then echo "Nothing new."; exit 0; fi
+          git commit -m "Record benchmark runs and update the leaderboard"
+          for attempt in 1 2 3; do
+            git pull --rebase -q origin "${GITHUB_REF_NAME}" && git push origin "HEAD:${GITHUB_REF_NAME}" && exit 0
+            sleep 5
+          done
+          exit 1

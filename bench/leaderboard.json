@@ -1,0 +1,63 @@
+{
+  "rooms": [
+    "01-penny-room",
+    "02-time-trap",
+    "03-injection-vault",
+    "04-god-class"
+  ],
+  "models": [
+    {
+      "model": "gemini-3-flash-preview",
+      "runs": 4,
+      "errors": 0,
+      "escapes": 4,
+      "escapeRate": 1.0,
+      "firstTryEscapes": 4,
+      "avgAttemptsWhenEscaped": 1.0,
+      "avgTokens": 11886,
+      "avgSeconds": 83,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 9097,
+          "avgSeconds": 83
+        },
+        "02-time-trap": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 10536,
+          "avgSeconds": 73
+        },
+        "03-injection-vault": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 9684,
+          "avgSeconds": 95
+        },
+        "04-god-class": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 18227,
+          "avgSeconds": 82
+        }
+      }
+    }
+  ]
+}

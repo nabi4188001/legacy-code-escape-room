@@ -54,8 +54,19 @@ public final class EscapeAgent {
             attempt.put("number", n);
 
             long modelStart = System.nanoTime();
-            ChatModel.Reply reply = model.chat(PromptBuilder.build(
-                    room, workspace, result, rejected, plans, n, maxAttempts));
+            ChatModel.Reply reply;
+            try {
+                reply = model.chat(PromptBuilder.build(
+                        room, workspace, result, rejected, plans, n, maxAttempts));
+            } catch (RuntimeException e) {
+                attempt.put("modelSeconds", seconds(modelStart));
+                attempt.put("error", String.valueOf(e.getMessage()));
+                attempts.add(attempt);
+                log.put("status", "error");
+                log.put("error", String.valueOf(e.getMessage()));
+                narrator.accept("Attempt " + n + ": the model call failed: " + e.getMessage());
+                break;
+            }
             attempt.put("modelSeconds", seconds(modelStart));
             attempt.put("promptTokens", reply.promptTokens());
             attempt.put("completionTokens", reply.completionTokens());
@@ -96,12 +107,17 @@ public final class EscapeAgent {
             attempts.add(attempt);
         }
 
+        log.putIfAbsent("status", "completed");
         log.put("attempts", attempts);
         log.put("escaped", result.escaped());
         log.put("attemptsUsed", attempts.size());
         log.put("promptTokens", promptTokens);
         log.put("completionTokens", completionTokens);
         log.put("totalSeconds", seconds(runStart));
+        if (!"completed".equals(log.get("status"))) {
+            narrator.accept("Run ended early: " + log.get("error"));
+            return log;
+        }
         narrator.accept(result.escaped()
                 ? "ESCAPED " + room.name() + " in " + attempts.size() + " attempt(s)."
                 : "Still locked in " + room.name() + " after " + attempts.size() + " attempt(s).");

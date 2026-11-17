@@ -15,7 +15,8 @@ import java.util.Map;
  * </pre>
  *
  * Settings come from the environment so the same build can run any provider:
- * LLM_BASE_URL, LLM_MODEL, LLM_API_KEY.
+ * LLM_BASE_URL, LLM_MODEL, LLM_API_KEY, and LLM_SYSTEM_AS_USER=true for models that
+ * refuse a system message.
  */
 public final class Main {
 
@@ -52,7 +53,8 @@ public final class Main {
             System.err.println("Set LLM_API_KEY to your model provider's API key.");
             System.exit(2);
         }
-        OpenAiCompatibleModel model = new OpenAiCompatibleModel(baseUrl, modelName, apiKey);
+        OpenAiCompatibleModel model = new OpenAiCompatibleModel(baseUrl, modelName, apiKey,
+                "true".equalsIgnoreCase(env("LLM_SYSTEM_AS_USER", "false")));
         if (listModels) {
             model.listModels().forEach(System.out::println);
             return;

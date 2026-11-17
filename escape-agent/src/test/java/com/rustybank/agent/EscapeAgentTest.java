@@ -89,4 +89,39 @@ class EscapeAgentTest {
         assertTrue(prompt.contains("golden 13/13, escape 8/9"));
         assertEquals("system", model.conversations.get(0).get(0).role());
     }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void aFailingModelCallEndsTheRunButKeepsTheLog() throws Exception {
+        Room room = Room.load(TestSupport.repoRoot(), "01-penny-room");
+        Workspace workspace = TestSupport.freshWorkspace(room);
+        String partial = TestSupport.resource("attempt1.txt");
+        int[] calls = {0};
+        ChatModel flaky = new ChatModel() {
+            public String name() {
+                return "flaky";
+            }
+
+            public Reply chat(List<Message> messages) {
+                if (++calls[0] == 2) {
+                    throw new IllegalStateException("Model call failed with HTTP 429: quota");
+                }
+                return new Reply(partial, 10, 5);
+            }
+        };
+
+        Map<String, Object> log = new EscapeAgent(room, flaky, fakeVerifier(), 5, line -> { })
+                .run(workspace);
+
+        assertEquals("error", log.get("status"));
+        assertEquals("Model call failed with HTTP 429: quota", log.get("error"));
+        assertEquals(false, log.get("escaped"));
+        List<Object> attempts = (List<Object>) log.get("attempts");
+        assertEquals(2, attempts.size());
+        assertEquals("Model call failed with HTTP 429: quota",
+                ((Map<String, Object>) attempts.get(1)).get("error"));
+        assertEquals("completed", new EscapeAgent(room, new TestSupport.ScriptedModel(
+                TestSupport.resource("attempt2.txt")), fakeVerifier(), 5, line -> { })
+                .run(TestSupport.freshWorkspace(room)).get("status"));
+    }
 }
