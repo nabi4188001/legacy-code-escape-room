@@ -58,6 +58,29 @@
           "avgSeconds": 82
         }
       }
+    },
+    {
+      "model": "gemma-4-26b-a4b-it",
+      "runs": 1,
+      "errors": 0,
+      "escapes": 1,
+      "escapeRate": 1.0,
+      "firstTryEscapes": 1,
+      "avgAttemptsWhenEscaped": 1.0,
+      "avgTokens": 9164,
+      "avgSeconds": 170,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 9164,
+          "avgSeconds": 170
+        }
+      }
     }
   ]
 }

@@ -7,6 +7,7 @@ Which models escape which rooms, how many attempts it takes, and what it costs. 
 | Model | Escaped | First try | Avg attempts when escaped | Avg tokens | Avg seconds |
 |---|---|---|---|---|---|
 | gemini-3-flash-preview | 4/4 (100%) | 4 | 1.0 | 11,886 | 83 |
+| gemma-4-26b-a4b-it | 1/1 (100%) | 1 | 1.0 | 9,164 | 170 |
 
 ## Room by room
 
@@ -15,5 +16,6 @@ Each cell is escapes/runs, with the average number of attempts of the escapes in
 | Model | 01-penny-room | 02-time-trap | 03-injection-vault | 04-god-class |
 |---|---|---|---|---|
 | gemini-3-flash-preview | 1/1 (1.0) | 1/1 (1.0) | 1/1 (1.0) | 1/1 (1.0) |
+| gemma-4-26b-a4b-it | 1/1 (1.0) | - | - | - |
 
 A run that stopped because a model call failed (rate limit, outage) is shown as `err` and is left out of the percentages.
