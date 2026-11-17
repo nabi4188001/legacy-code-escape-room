@@ -15,7 +15,7 @@ project turns that job into something you can watch, score and compare across mo
 | 1 | [The Penny Room](rooms/01-penny-room/ROOM.md) | Money stored as `double` | Built |
 | 2 | [The Time Trap](rooms/02-time-trap/ROOM.md) | `Date`, `Calendar` and a server clock nobody can trust | Built |
 | 3 | [The Injection Vault](rooms/03-injection-vault/ROOM.md) | SQL built by gluing text together | Built |
-| 4 | The God Class | A 2,000-line `TransactionManager` | Planned |
+| 4 | [The God Class](rooms/04-god-class/ROOM.md) | One class that does everything, and a bank kept in static fields | Built |
 | 5 | Boss Room | Two transfers racing for one balance | Planned |
 
 ## How a room works
@@ -83,7 +83,7 @@ is saved as a repository secret.
 - [x] The agent loop: look, ask, apply, judge, retry, with a full run log
 - [ ] First recorded escapes of Room 1 by real models
 - [x] Room 2: the Time Trap
-- [ ] Rooms 3 and 4
+- [x] Rooms 3 and 4: the Injection Vault and the God Class
 - [ ] Replay viewer: watch any escape attempt in the browser
 - [ ] Boss room and **RustyBench**: a leaderboard of which models escape which rooms, and at what cost
 

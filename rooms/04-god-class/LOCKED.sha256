@@ -1,0 +1,3 @@
+e01b16c9688f4cbdf70a7bea2c5562850914b8396d678f0a163f4f35271026be  rusty-ledger/src/main/java/com/rustyledger/Ledger.java
+a022ce1bf46cac6009e49ba9043143c88ba3004d505223670ae0214ab0b52575  rusty-ledger/src/test/java/com/rustyledger/rooms/god/LedgerEscapeTest.java
+38f60fbdab8b5ae010ed5429dbcb10a9511170523d3fa53c8e53de538021f5b0  rusty-ledger/src/test/java/com/rustyledger/rooms/god/LedgerGoldenMasterTest.java

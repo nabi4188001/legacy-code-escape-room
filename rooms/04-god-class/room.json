@@ -1,0 +1,15 @@
+{
+  "id": "04-god-class",
+  "name": "The God Class",
+  "legacyProblem": "One class that does everything and keeps the whole bank in static fields",
+  "module": "rusty-ledger",
+  "editable": ["rusty-ledger/src/main/java/"],
+  "locked": [
+    "rusty-ledger/src/main/java/com/rustyledger/Ledger.java",
+    "rusty-ledger/src/test/java/com/rustyledger/rooms/god/LedgerGoldenMasterTest.java",
+    "rusty-ledger/src/test/java/com/rustyledger/rooms/god/LedgerEscapeTest.java"
+  ],
+  "goldenTests": "com.rustyledger.rooms.god.LedgerGoldenMasterTest",
+  "escapeTests": "com.rustyledger.rooms.god.LedgerEscapeTest",
+  "escapeCondition": "locked files untouched, all golden tests pass, all escape tests pass"
+}
