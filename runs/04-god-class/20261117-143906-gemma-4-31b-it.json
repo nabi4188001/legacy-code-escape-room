@@ -1,0 +1,53 @@
+{
+  "room": "04-god-class",
+  "roomName": "The God Class",
+  "model": "gemma-4-31b-it",
+  "startedAt": "2026-11-17T14:30:02.651573662Z",
+  "maxAttempts": 5,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 24/24, escape 0/4",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 24,
+    "goldenTotal": 24,
+    "escapePassed": 0,
+    "escapeTotal": 4,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "ledgersAreIndependent",
+        "message": "expected: <150.00 PLN> but was: <5.00 EUR>"
+      },
+      {
+        "suite": "escape",
+        "test": "noGodFiles",
+        "message": "expected: <[]> but was: <[TransactionManager.java has 349 lines]>"
+      },
+      {
+        "suite": "escape",
+        "test": "noEssayMethods",
+        "message": "expected: <[]> but was: <[TransactionManager.java has a block of 47 lines]>"
+      },
+      {
+        "suite": "escape",
+        "test": "workIsSharedOut",
+        "message": "only 3 source files: [Ledger.java, RustyLedger.java, TransactionManager.java] ==> expected: <true> but was: <false>"
+      }
+    ]
+  },
+  "status": "error",
+  "error": "Model call failed with HTTP 503: [{\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n]",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 539.61,
+      "error": "Model call failed with HTTP 503: [{\n  \"error\": {\n    \"code\": 503,\n    \"message\": \"This model is currently experiencing high demand. Spikes in demand are usually temporary. Please try again later.\",\n    \"status\": \"UNAVAILABLE\"\n  }\n}\n]"
+    }
+  ],
+  "escaped": false,
+  "attemptsUsed": 1,
+  "promptTokens": 0,
+  "completionTokens": 0,
+  "totalSeconds": 543.51
+}
