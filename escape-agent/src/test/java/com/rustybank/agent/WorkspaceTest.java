@@ -82,4 +82,21 @@ class WorkspaceTest {
                 "interface PaymentCalendar {}\n")));
         assertTrue(applied.accepted().isEmpty());
     }
+
+    @Test
+    void everyRoomIsReadyForTheAgent() throws Exception {
+        List<String> roomIds = new java.util.ArrayList<>();
+        try (java.util.stream.Stream<Path> dirs = Files.list(TestSupport.repoRoot().resolve("rooms"))) {
+            dirs.filter(Files::isDirectory).forEach(d -> roomIds.add(d.getFileName().toString()));
+        }
+        assertTrue(roomIds.size() >= 4);
+        for (String id : roomIds) {
+            Room room = Room.load(TestSupport.repoRoot(), id);
+            Workspace workspace = TestSupport.freshWorkspace(room);
+            assertTrue(workspace.brokenLocks().isEmpty(), id);
+            assertEquals(3, workspace.lockedFiles().size(), id);
+            assertFalse(workspace.editableFiles().isEmpty(), id);
+            assertFalse(room.brief().contains("Hints for humans"), id);
+        }
+    }
 }
