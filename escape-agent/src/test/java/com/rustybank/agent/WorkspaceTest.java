@@ -66,4 +66,20 @@ class WorkspaceTest {
         Files.writeString(test, Files.readString(test) + "// sneaky\n");
         assertEquals(List.of(ESCAPE_TEST), workspace.brokenLocks());
     }
+
+    @Test
+    void theTimeTrapRoomIsReadyForTheAgent() throws Exception {
+        Room room = Room.load(TestSupport.repoRoot(), "02-time-trap");
+        Workspace workspace = TestSupport.freshWorkspace(room);
+        assertEquals("rusty-payments", room.module());
+        assertTrue(workspace.brokenLocks().isEmpty());
+        assertEquals(3, workspace.lockedFiles().size());
+        assertTrue(workspace.editableFiles().containsKey(
+                "rusty-payments/src/main/java/com/rustypayments/legacy/DateUtil.java"));
+        assertFalse(room.brief().contains("YYYY"), "hints must not leak into the brief");
+        Workspace.Applied applied = workspace.apply(List.of(new Edit(
+                "rusty-payments/src/main/java/com/rustypayments/PaymentCalendar.java",
+                "interface PaymentCalendar {}\n")));
+        assertTrue(applied.accepted().isEmpty());
+    }
 }

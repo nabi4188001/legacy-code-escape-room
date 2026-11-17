@@ -1,0 +1,15 @@
+{
+  "id": "02-time-trap",
+  "name": "The Time Trap",
+  "legacyProblem": "Date, Calendar and SimpleDateFormat: trusting the server clock",
+  "module": "rusty-payments",
+  "editable": ["rusty-payments/src/main/java/"],
+  "locked": [
+    "rusty-payments/src/main/java/com/rustypayments/PaymentCalendar.java",
+    "rusty-payments/src/test/java/com/rustypayments/rooms/time/TimeTrapGoldenMasterTest.java",
+    "rusty-payments/src/test/java/com/rustypayments/rooms/time/TimeTrapEscapeTest.java"
+  ],
+  "goldenTests": "com.rustypayments.rooms.time.TimeTrapGoldenMasterTest",
+  "escapeTests": "com.rustypayments.rooms.time.TimeTrapEscapeTest",
+  "escapeCondition": "locked files untouched, all golden tests pass, all escape tests pass"
+}

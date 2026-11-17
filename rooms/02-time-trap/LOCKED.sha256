@@ -1,0 +1,3 @@
+67af4c774027fac36f35f561ce1a76d02f5ef2eacc89ab81e295405536443256  rusty-payments/src/main/java/com/rustypayments/PaymentCalendar.java
+9fbca23c991be2b0db7d55a48a8e2e5ebd36cffabd0f28a847f8147fc9114d08  rusty-payments/src/test/java/com/rustypayments/rooms/time/TimeTrapEscapeTest.java
+3c3b7586a1672776a6c2efc2f5e9a2d6a85e7f558e125df08b5930d5dac97256  rusty-payments/src/test/java/com/rustypayments/rooms/time/TimeTrapGoldenMasterTest.java
