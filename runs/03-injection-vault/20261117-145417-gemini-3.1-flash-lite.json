@@ -1,0 +1,134 @@
+{
+  "room": "03-injection-vault",
+  "roomName": "The Injection Vault",
+  "model": "gemini-3.1-flash-lite",
+  "startedAt": "2026-11-17T14:53:43.791771159Z",
+  "maxAttempts": 5,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 13/13, escape 0/9",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 13,
+    "goldenTotal": 13,
+    "escapePassed": 0,
+    "escapeTotal": 9,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "idListsAreChecked",
+        "message": "Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "deleteWorksWithApostrophes",
+        "message": "SQL ERROR: Syntax error in SQL statement \"DELETE FROM customer WHERE city = 'Cote d'Azur[*]'\"; SQL statement:\nDELETE FROM customer WHERE city = 'Cote d'Azur' [42000-232]"
+      },
+      {
+        "suite": "escape",
+        "test": "sortKeyIsAllowListed",
+        "message": "name, id DESC ==> Unexpected exception type thrown, expected: <java.lang.IllegalArgumentException> but was: <java.lang.IllegalStateException>"
+      },
+      {
+        "suite": "escape",
+        "test": "idsAreDigitsOnly",
+        "message": "getById 1 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "prefixCannotBeInjected",
+        "message": "SQL ERROR: Syntax error in SQL statement \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%[*]') ORDER BY id\"; SQL statement:\nSELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%') ORDER BY id [42000-232]"
+      },
+      {
+        "suite": "escape",
+        "test": "amountsAreDigitsOnly",
+        "message": "0 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "wildcardsAreLiteral",
+        "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000, 6|100% Real|Gdansk|1, 7|a_b|Gdansk|1, 8|axb|Gdansk|1]>"
+      },
+      {
+        "suite": "escape",
+        "test": "storedValuesAreNotTrusted",
+        "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000]>"
+      },
+      {
+        "suite": "escape",
+        "test": "deleteCannotWipeTheTable",
+        "message": "expected: <0> but was: <5>"
+      }
+    ]
+  },
+  "status": "completed",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 5.01,
+      "promptTokens": 7983,
+      "completionTokens": 1386,
+      "plan": "The legacy implementation uses string concatenation, which is prone to SQL injection and syntax errors. I will replace all direct SQL construction with `java.sql.PreparedStatement` to ensure parameter binding, and implement a rigorous validation helper for inputs (IDs, amounts, sort keys).",
+      "edits": [
+        {
+          "path": "rusty-vault/src/main/java/com/rustyvault/legacy/LegacyCustomerDirectory.java",
+          "action": "rewrite",
+          "before": "package com.rustyvault.legacy;\n\nimport com.rustyvault.CustomerDirectory;\n\nimport java.sql.Connection;\nimport java.sql.ResultSet;\nimport java.sql.SQLException;\nimport java.sql.Statement;\nimport java.util.ArrayList;\nimport java.util.List;\n\n/**\n * CUSTOMER DIRECTORY\n * CREATED 18.06.2003\n * CHG 02.02.2007 - quotes doubled after a customer called O'Neil broke the night run\n * CHG 11.10.2012 - sort order now comes from the screen, saves a case statement\n */\npublic class LegacyCustomerDirectory implements CustomerDirectory {\n\n    private static final String COLUMNS = \"id, name, city, balance_cents\";\n\n    private Connection conn;\n\n    public LegacyCustomerDirectory(Connection conn) {\n        this.conn = conn;\n    }\n\n    public long addCustomer(String name, String city, long balanceCents) {\n        if (name == null || name.trim().length() == 0 || city == null\n                || city.trim().length() == 0 || balanceCents < 0) {\n            throw new IllegalArgumentException(\"INVALID CUSTOMER\");\n        }\n        String sql = \"INSERT INTO customer (name, city, balance_cents) VALUES ('\"\n                + quote(name) + \"', '\" + quote(city) + \"', \" + balanceCents + \")\";\n        try {\n            Statement st = conn.createStatement();\n            st.executeUpdate(sql, Statement.RETURN_GENERATED_KEYS);\n            ResultSet keys = st.getGeneratedKeys();\n            keys.next();\n            long id = keys.getLong(1);\n            st.close();\n            return id;\n        } catch (SQLException e) {\n            throw new IllegalStateException(\"SQL ERROR: \" + e.getMessage());\n        }\n    }\n\n    public List<String> findByName(String name) {\n        if (name == null) {\n            throw new IllegalArgumentException(\"INVALID NAME\");\n        }\n        return query(\"SELECT \" + COLUMNS + \" FROM customer WHERE name = '\" + quote(name)\n                + \"' ORDER BY id\");\n    }\n\n    public List<String> searchByNamePrefix(String prefix) {\n        if (prefix == null) {\n            throw new IllegalArgumentException(\"INVALID PREFIX\");\n        }\n        return query(\"SELECT \" + COLUMNS + \" FROM customer WHERE UPPER(name) LIKE UPPER('\"\n                + prefix + \"%') ORDER BY id\");\n    }\n\n    public List<String> list(String sortBy, boolean descending) {\n        String column = \"balance\".equals(sortBy) ? \"balance_cents\" : sortBy;\n        return query(\"SELECT \" + COLUMNS + \" FROM customer ORDER BY \" + column\n                + (descending ? \" DESC\" : \" ASC\") + \", id ASC\");\n    }\n\n    public String getById(String id) {\n        List<String> rows = query(\"SELECT \" + COLUMNS + \" FROM customer WHERE id = \" + id);\n        return rows.isEmpty() ? null : rows.get(0);\n    }\n\n    public List<String> findByIds(List<String> ids) {\n        StringBuilder in = new StringBuilder();\n        for (int i = 0; i < ids.size(); i++) {\n            if (i > 0) {\n                in.append(\",\");\n            }\n            in.append(ids.get(i));\n        }\n        return query(\"SELECT \" + COLUMNS + \" FROM customer WHERE id IN (\" + in\n                + \") ORDER BY id\");\n    }\n\n    public List<String> richerThan(String minBalanceCents) {\n        return query(\"SELECT \" + COLUMNS + \" FROM customer WHERE balance_cents > \"\n                + minBalanceCents + \" ORDER BY id\");\n    }\n\n    public List<String> sameCityAs(String id) {\n        String row = getById(id);\n        if (row == null) {\n            throw new IllegalArgumentException(\"UNKNOWN CUSTOMER: \" + id);\n        }\n        String city = row.split(\"\\\\|\")[2];\n        return query(\"SELECT \" + COLUMNS + \" FROM customer WHERE city = '\" + city\n                + \"' AND id <> \" + id + \" ORDER BY id\");\n    }\n\n    public int deleteByCity(String city) {\n        if (city == null) {\n            throw new IllegalArgumentException(\"INVALID CITY\");\n        }\n        try {\n            Statement st = conn.createStatement();\n            int deleted = st.executeUpdate(\"DELETE FROM customer WHERE city = '\" + city + \"'\");\n            st.close();\n            return deleted;\n        } catch (SQLException e) {\n            throw new IllegalStateException(\"SQL ERROR: \" + e.getMessage());\n        }\n    }\n\n    public int count() {\n        List<String> rows = query(\"SELECT \" + COLUMNS + \" FROM customer\");\n        return rows.size();\n    }\n\n    private List<String> query(String sql) {\n        List<String> rows = new ArrayList<String>();\n        try {\n            Statement st = conn.createStatement();\n            ResultSet rs = st.executeQuery(sql);\n            while (rs.next()) {\n                rows.add(rs.getLong(1) + \"|\" + rs.getString(2) + \"|\" + rs.getString(3) + \"|\"\n                        + rs.getLong(4));\n            }\n            rs.close();\n            st.close();\n        } catch (SQLException e) {\n            throw new IllegalStateException(\"SQL ERROR: \" + e.getMessage());\n        }\n        return rows;\n    }\n\n    private String quote(String text) {\n        return text.replace(\"'\", \"''\");\n    }\n}\n",
+          "after": "package com.rustyvault.legacy;\n\nimport com.rustyvault.CustomerDirectory;\nimport java.sql.*;\nimport java.util.*;\n\npublic class LegacyCustomerDirectory implements CustomerDirectory {\n\n    private final Connection conn;\n\n    public LegacyCustomerDirectory(Connection conn) {\n        this.conn = conn;\n    }\n\n    private void validateId(String id) {\n        if (id == null || !id.matches(\"\\\\d{1,18}\")) throw new IllegalArgumentException(\"Invalid ID\");\n    }\n\n    private void validateAmount(String amount) {\n        if (amount == null || !amount.matches(\"\\\\d{1,18}\")) throw new IllegalArgumentException(\"Invalid Amount\");\n    }\n\n    public long addCustomer(String name, String city, long balanceCents) {\n        if (name == null || name.isBlank() || city == null || city.isBlank() || balanceCents < 0)\n            throw new IllegalArgumentException(\"Invalid input\");\n        String sql = \"INSERT INTO customer (name, city, balance_cents) VALUES (?, ?, ?)\";\n        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {\n            ps.setString(1, name);\n            ps.setString(2, city);\n            ps.setLong(3, balanceCents);\n            ps.executeUpdate();\n            try (ResultSet rs = ps.getGeneratedKeys()) {\n                rs.next();\n                return rs.getLong(1);\n            }\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n\n    public List<String> findByName(String name) {\n        if (name == null) throw new IllegalArgumentException();\n        String sql = \"SELECT id, name, city, balance_cents FROM customer WHERE name = ? ORDER BY id\";\n        return query(sql, List.of(name));\n    }\n\n    public List<String> searchByNamePrefix(String prefix) {\n        if (prefix == null) throw new IllegalArgumentException();\n        String sql = \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER(?) ESCAPE '' ORDER BY id\";\n        return query(sql, List.of(prefix + \"%\"));\n    }\n\n    public List<String> list(String sortBy, boolean descending) {\n        Set<String> valid = Set.of(\"id\", \"name\", \"city\", \"balance\");\n        if (sortBy == null || !valid.contains(sortBy)) throw new IllegalArgumentException();\n        String col = \"balance\".equals(sortBy) ? \"balance_cents\" : sortBy;\n        String sql = \"SELECT id, name, city, balance_cents FROM customer ORDER BY \" + col + (descending ? \" DESC\" : \" ASC\") + \", id ASC\";\n        return query(sql, List.of());\n    }\n\n    public String getById(String id) {\n        validateId(id);\n        List<String> res = query(\"SELECT id, name, city, balance_cents FROM customer WHERE id = ?\", List.of(Long.parseLong(id)));\n        return res.isEmpty() ? null : res.get(0);\n    }\n\n    public List<String> findByIds(List<String> ids) {\n        if (ids == null) throw new IllegalArgumentException();\n        if (ids.isEmpty()) return List.of();\n        for (String id : ids) validateId(id);\n        StringJoiner sj = new StringJoiner(\",\", \"SELECT id, name, city, balance_cents FROM customer WHERE id IN (\", \") ORDER BY id\");\n        ids.forEach(i -> sj.add(\"?\"));\n        List<Object> params = new ArrayList<>(ids.stream().map(Long::parseLong).toList());\n        return query(sj.toString(), params);\n    }\n\n    public List<String> richerThan(String minBalanceCents) {\n        validateAmount(minBalanceCents);\n        return query(\"SELECT id, name, city, balance_cents FROM customer WHERE balance_cents > ? ORDER BY id\", List.of(Long.parseLong(minBalanceCents)));\n    }\n\n    public List<String> sameCityAs(String id) {\n        String row = getById(id);\n        if (row == null) throw new IllegalArgumentException();\n        String city = row.split(\"\\\\|\")[2];\n        return query(\"SELECT id, name, city, balance_cents FROM customer WHERE city = ? AND id <> ? ORDER BY id\", List.of(city, Long.parseLong(id)));\n    }\n\n    public int deleteByCity(String city) {\n        if (city == null) throw new IllegalArgumentException();\n        try (PreparedStatement ps = conn.prepareStatement(\"DELETE FROM customer WHERE city = ?\")) {\n            ps.setString(1, city);\n            return ps.executeUpdate();\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n\n    public int count() {\n        return query(\"SELECT id, name, city, balance_cents FROM customer\", List.of()).size();\n    }\n\n    private List<String> query(String sql, List<Object> params) {\n        try (PreparedStatement ps = conn.prepareStatement(sql)) {\n            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));\n            try (ResultSet rs = ps.executeQuery()) {\n                List<String> rows = new ArrayList<>();\n                while (rs.next()) rows.add(rs.getLong(1) + \"|\" + rs.getString(2) + \"|\" + rs.getString(3) + \"|\" + rs.getLong(4));\n                return rows;\n            }\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n}\n"
+        }
+      ],
+      "rejectedEdits": {},
+      "verifySeconds": 3.13,
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 8/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 8,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "wildcardsAreLiteral",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000, 6|100% Real|Gdansk|1, 7|a_b|Gdansk|1, 8|axb|Gdansk|1]>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 2,
+      "modelSeconds": 19.14,
+      "promptTokens": 7653,
+      "completionTokens": 1442,
+      "plan": "The `searchByNamePrefix` method currently fails because `%` and `_` are treated as SQL wildcards. I will update the query to properly escape these characters for the `LIKE` clause and ensure the `ESCAPE` clause is used correctly.",
+      "edits": [
+        {
+          "path": "rusty-vault/src/main/java/com/rustyvault/legacy/LegacyCustomerDirectory.java",
+          "action": "rewrite",
+          "before": "package com.rustyvault.legacy;\n\nimport com.rustyvault.CustomerDirectory;\nimport java.sql.*;\nimport java.util.*;\n\npublic class LegacyCustomerDirectory implements CustomerDirectory {\n\n    private final Connection conn;\n\n    public LegacyCustomerDirectory(Connection conn) {\n        this.conn = conn;\n    }\n\n    private void validateId(String id) {\n        if (id == null || !id.matches(\"\\\\d{1,18}\")) throw new IllegalArgumentException(\"Invalid ID\");\n    }\n\n    private void validateAmount(String amount) {\n        if (amount == null || !amount.matches(\"\\\\d{1,18}\")) throw new IllegalArgumentException(\"Invalid Amount\");\n    }\n\n    public long addCustomer(String name, String city, long balanceCents) {\n        if (name == null || name.isBlank() || city == null || city.isBlank() || balanceCents < 0)\n            throw new IllegalArgumentException(\"Invalid input\");\n        String sql = \"INSERT INTO customer (name, city, balance_cents) VALUES (?, ?, ?)\";\n        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {\n            ps.setString(1, name);\n            ps.setString(2, city);\n            ps.setLong(3, balanceCents);\n            ps.executeUpdate();\n            try (ResultSet rs = ps.getGeneratedKeys()) {\n                rs.next();\n                return rs.getLong(1);\n            }\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n\n    public List<String> findByName(String name) {\n        if (name == null) throw new IllegalArgumentException();\n        String sql = \"SELECT id, name, city, balance_cents FROM customer WHERE name = ? ORDER BY id\";\n        return query(sql, List.of(name));\n    }\n\n    public List<String> searchByNamePrefix(String prefix) {\n        if (prefix == null) throw new IllegalArgumentException();\n        String sql = \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER(?) ESCAPE '' ORDER BY id\";\n        return query(sql, List.of(prefix + \"%\"));\n    }\n\n    public List<String> list(String sortBy, boolean descending) {\n        Set<String> valid = Set.of(\"id\", \"name\", \"city\", \"balance\");\n        if (sortBy == null || !valid.contains(sortBy)) throw new IllegalArgumentException();\n        String col = \"balance\".equals(sortBy) ? \"balance_cents\" : sortBy;\n        String sql = \"SELECT id, name, city, balance_cents FROM customer ORDER BY \" + col + (descending ? \" DESC\" : \" ASC\") + \", id ASC\";\n        return query(sql, List.of());\n    }\n\n    public String getById(String id) {\n        validateId(id);\n        List<String> res = query(\"SELECT id, name, city, balance_cents FROM customer WHERE id = ?\", List.of(Long.parseLong(id)));\n        return res.isEmpty() ? null : res.get(0);\n    }\n\n    public List<String> findByIds(List<String> ids) {\n        if (ids == null) throw new IllegalArgumentException();\n        if (ids.isEmpty()) return List.of();\n        for (String id : ids) validateId(id);\n        StringJoiner sj = new StringJoiner(\",\", \"SELECT id, name, city, balance_cents FROM customer WHERE id IN (\", \") ORDER BY id\");\n        ids.forEach(i -> sj.add(\"?\"));\n        List<Object> params = new ArrayList<>(ids.stream().map(Long::parseLong).toList());\n        return query(sj.toString(), params);\n    }\n\n    public List<String> richerThan(String minBalanceCents) {\n        validateAmount(minBalanceCents);\n        return query(\"SELECT id, name, city, balance_cents FROM customer WHERE balance_cents > ? ORDER BY id\", List.of(Long.parseLong(minBalanceCents)));\n    }\n\n    public List<String> sameCityAs(String id) {\n        String row = getById(id);\n        if (row == null) throw new IllegalArgumentException();\n        String city = row.split(\"\\\\|\")[2];\n        return query(\"SELECT id, name, city, balance_cents FROM customer WHERE city = ? AND id <> ? ORDER BY id\", List.of(city, Long.parseLong(id)));\n    }\n\n    public int deleteByCity(String city) {\n        if (city == null) throw new IllegalArgumentException();\n        try (PreparedStatement ps = conn.prepareStatement(\"DELETE FROM customer WHERE city = ?\")) {\n            ps.setString(1, city);\n            return ps.executeUpdate();\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n\n    public int count() {\n        return query(\"SELECT id, name, city, balance_cents FROM customer\", List.of()).size();\n    }\n\n    private List<String> query(String sql, List<Object> params) {\n        try (PreparedStatement ps = conn.prepareStatement(sql)) {\n            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));\n            try (ResultSet rs = ps.executeQuery()) {\n                List<String> rows = new ArrayList<>();\n                while (rs.next()) rows.add(rs.getLong(1) + \"|\" + rs.getString(2) + \"|\" + rs.getString(3) + \"|\" + rs.getLong(4));\n                return rows;\n            }\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n}\n",
+          "after": "package com.rustyvault.legacy;\n\nimport com.rustyvault.CustomerDirectory;\nimport java.sql.*;\nimport java.util.*;\n\npublic class LegacyCustomerDirectory implements CustomerDirectory {\n\n    private final Connection conn;\n\n    public LegacyCustomerDirectory(Connection conn) {\n        this.conn = conn;\n    }\n\n    private void validateId(String id) {\n        if (id == null || !id.matches(\"\\\\d{1,18}\")) throw new IllegalArgumentException(\"Invalid ID\");\n    }\n\n    private void validateAmount(String amount) {\n        if (amount == null || !amount.matches(\"\\\\d{1,18}\")) throw new IllegalArgumentException(\"Invalid Amount\");\n    }\n\n    public long addCustomer(String name, String city, long balanceCents) {\n        if (name == null || name.isBlank() || city == null || city.isBlank() || balanceCents < 0)\n            throw new IllegalArgumentException(\"Invalid input\");\n        String sql = \"INSERT INTO customer (name, city, balance_cents) VALUES (?, ?, ?)\";\n        try (PreparedStatement ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {\n            ps.setString(1, name);\n            ps.setString(2, city);\n            ps.setLong(3, balanceCents);\n            ps.executeUpdate();\n            try (ResultSet rs = ps.getGeneratedKeys()) {\n                rs.next();\n                return rs.getLong(1);\n            }\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n\n    public List<String> findByName(String name) {\n        if (name == null) throw new IllegalArgumentException();\n        String sql = \"SELECT id, name, city, balance_cents FROM customer WHERE name = ? ORDER BY id\";\n        return query(sql, List.of(name));\n    }\n\n    public List<String> searchByNamePrefix(String prefix) {\n        if (prefix == null) throw new IllegalArgumentException();\n        String escaped = prefix.replace(\"\\\\\", \"\\\\\\\\\").replace(\"%\", \"\\\\%\").replace(\"_\", \"\\\\_\");\n        String sql = \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER(?) ESCAPE '\\\\' ORDER BY id\";\n        return query(sql, List.of(escaped + \"%\"));\n    }\n\n    public List<String> list(String sortBy, boolean descending) {\n        Set<String> valid = Set.of(\"id\", \"name\", \"city\", \"balance\");\n        if (sortBy == null || !valid.contains(sortBy)) throw new IllegalArgumentException();\n        String col = \"balance\".equals(sortBy) ? \"balance_cents\" : sortBy;\n        String sql = \"SELECT id, name, city, balance_cents FROM customer ORDER BY \" + col + (descending ? \" DESC\" : \" ASC\") + \", id ASC\";\n        return query(sql, List.of());\n    }\n\n    public String getById(String id) {\n        validateId(id);\n        List<String> res = query(\"SELECT id, name, city, balance_cents FROM customer WHERE id = ?\", List.of(Long.parseLong(id)));\n        return res.isEmpty() ? null : res.get(0);\n    }\n\n    public List<String> findByIds(List<String> ids) {\n        if (ids == null) throw new IllegalArgumentException();\n        if (ids.isEmpty()) return List.of();\n        for (String id : ids) validateId(id);\n        StringJoiner sj = new StringJoiner(\",\", \"SELECT id, name, city, balance_cents FROM customer WHERE id IN (\", \") ORDER BY id\");\n        ids.forEach(i -> sj.add(\"?\"));\n        List<Object> params = new ArrayList<>(ids.stream().map(Long::parseLong).toList());\n        return query(sj.toString(), params);\n    }\n\n    public List<String> richerThan(String minBalanceCents) {\n        validateAmount(minBalanceCents);\n        return query(\"SELECT id, name, city, balance_cents FROM customer WHERE balance_cents > ? ORDER BY id\", List.of(Long.parseLong(minBalanceCents)));\n    }\n\n    public List<String> sameCityAs(String id) {\n        String row = getById(id);\n        if (row == null) throw new IllegalArgumentException();\n        String city = row.split(\"\\\\|\")[2];\n        return query(\"SELECT id, name, city, balance_cents FROM customer WHERE city = ? AND id <> ? ORDER BY id\", List.of(city, Long.parseLong(id)));\n    }\n\n    public int deleteByCity(String city) {\n        if (city == null) throw new IllegalArgumentException();\n        try (PreparedStatement ps = conn.prepareStatement(\"DELETE FROM customer WHERE city = ?\")) {\n            ps.setString(1, city);\n            return ps.executeUpdate();\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n\n    public int count() {\n        try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(\"SELECT count(*) FROM customer\")) {\n            rs.next();\n            return rs.getInt(1);\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n\n    private List<String> query(String sql, List<Object> params) {\n        try (PreparedStatement ps = conn.prepareStatement(sql)) {\n            for (int i = 0; i < params.size(); i++) ps.setObject(i + 1, params.get(i));\n            try (ResultSet rs = ps.executeQuery()) {\n                List<String> rows = new ArrayList<>();\n                while (rs.next()) rows.add(rs.getLong(1) + \"|\" + rs.getString(2) + \"|\" + rs.getString(3) + \"|\" + rs.getLong(4));\n                return rows;\n            }\n        } catch (SQLException e) { throw new IllegalStateException(e); }\n    }\n}\n"
+        }
+      ],
+      "rejectedEdits": {},
+      "verifySeconds": 3.08,
+      "result": {
+        "escaped": true,
+        "headline": "golden 13/13, escape 9/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 9,
+        "escapeTotal": 9,
+        "failures": []
+      }
+    }
+  ],
+  "escaped": true,
+  "attemptsUsed": 2,
+  "promptTokens": 15636,
+  "completionTokens": 2828,
+  "totalSeconds": 33.48
+}

@@ -164,6 +164,59 @@
           "avgSeconds": null
         }
       }
+    },
+    {
+      "model": "gemini-3.1-flash-lite",
+      "runs": 12,
+      "errors": 0,
+      "escapes": 9,
+      "escapeRate": 0.75,
+      "firstTryEscapes": 1,
+      "avgAttemptsWhenEscaped": 2.22,
+      "avgTokens": 34701,
+      "avgSeconds": 48,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 3,
+          "errors": 0,
+          "escapes": 3,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 2.67,
+          "avgTokens": 21443,
+          "avgSeconds": 51
+        },
+        "02-time-trap": {
+          "runs": 3,
+          "errors": 0,
+          "escapes": 3,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 2.0,
+          "avgTokens": 19963,
+          "avgSeconds": 39
+        },
+        "03-injection-vault": {
+          "runs": 3,
+          "errors": 0,
+          "escapes": 3,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 2.0,
+          "avgTokens": 18363,
+          "avgSeconds": 24
+        },
+        "04-god-class": {
+          "runs": 3,
+          "errors": 0,
+          "escapes": 0,
+          "escapeRate": 0.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": 79035,
+          "avgSeconds": 77
+        }
+      }
     }
   ]
 }

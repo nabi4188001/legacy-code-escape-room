@@ -1,0 +1,151 @@
+{
+  "room": "02-time-trap",
+  "roomName": "The Time Trap",
+  "model": "gemini-3.1-flash-lite",
+  "startedAt": "2026-11-17T14:52:15.999930111Z",
+  "maxAttempts": 5,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 13/13, escape 0/9",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 13,
+    "goldenTotal": 13,
+    "escapePassed": 0,
+    "escapeTotal": 9,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "daysLateDoesNotDependOnTheServerZone",
+        "message": "UTC ==> expected: <1> but was: <0>"
+      },
+      {
+        "suite": "escape",
+        "test": "epiphanyIsABankHoliday",
+        "message": "expected: <false> but was: <true>"
+      },
+      {
+        "suite": "escape",
+        "test": "impossibleDatesAreRefused",
+        "message": "2026-02-30 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "settlementAtTheEndOfTheYear",
+        "message": "expected: <2026-12-28> but was: <2027-12-28>"
+      },
+      {
+        "suite": "escape",
+        "test": "cutOffDoesNotDependOnTheServerZone",
+        "message": "Europe/Warsaw ==> expected: <2026-07-02> but was: <2026-07-01>"
+      },
+      {
+        "suite": "escape",
+        "test": "cutOffIsToTheSecond",
+        "message": "expected: <2026-03-26> but was: <2026-03-25>"
+      },
+      {
+        "suite": "escape",
+        "test": "monthEndStaysMonthEnd",
+        "message": "expected: <2026-03-31> but was: <2026-03-28>"
+      },
+      {
+        "suite": "escape",
+        "test": "daysLateThroughTheClockChange",
+        "message": "expected: <3> but was: <2>"
+      },
+      {
+        "suite": "escape",
+        "test": "manyThreadsAtOnce",
+        "message": "expected: <[]> but was: <[processing(2026-03-25T17:30:00+01:00) gave 2026-05-04, expected 2026-03-26, processing(2026-03-25T10:15:00+01:00) gave 0000-03-25, expected 2026-03-25, processing(2026-03-25T17:30:00+01:00) gave 2026-03-30, expected 2026-03-26]>"
+      }
+    ]
+  },
+  "status": "completed",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 50.79,
+      "promptTokens": 9356,
+      "completionTokens": 1058,
+      "plan": "I will replace the legacy Date/Calendar/SimpleDateFormat utilities with java.time.ZonedDateTime and java.time.LocalDate to correctly handle the Warsaw time zone, leap years, and accurate calendar arithmetic. This avoids the thread-safety issues of SimpleDateFormat and the server-local timezone dependency of Calendar.",
+      "edits": [
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/LegacyPaymentCalendar.java",
+          "action": "rewrite",
+          "before": "package com.rustypayments.legacy;\n\nimport com.rustypayments.PaymentCalendar;\n\nimport java.util.Calendar;\nimport java.util.Date;\n\n/**\n * PAYMENT CALENDAR\n * CREATED 03.05.2002\n * CHG 30.08.2008 - cut-off moved from 15:00 to 16:00\n * CHG 09.09.2009 - migrated from the green screens, logic unchanged\n */\npublic class LegacyPaymentCalendar implements PaymentCalendar {\n\n    private static final long DAY_MILLIS = 24L * 60 * 60 * 1000;\n\n    public boolean isBusinessDay(String date) {\n        Calendar c = Calendar.getInstance();\n        c.setTime(DateUtil.parseDay(date));\n        return isBusinessDay(c);\n    }\n\n    public String processingDate(String submittedAt) {\n        return DateUtil.formatDay(processing(submittedAt).getTime());\n    }\n\n    public String settlementDate(String submittedAt) {\n        Calendar processing = processing(submittedAt);\n        return DateUtil.formatDay(nextBusinessDay(processing).getTime());\n    }\n\n    public int daysLate(String dueDate, String paidAt) {\n        Date due = DateUtil.parseDay(dueDate);\n        Date paid = DateUtil.parseInstant(paidAt);\n        long late = (paid.getTime() - due.getTime()) / DAY_MILLIS;\n        return late < 0 ? 0 : (int) late;\n    }\n\n    public String addMonths(String date, int months) {\n        Calendar c = Calendar.getInstance();\n        c.setTime(DateUtil.parseDay(date));\n        c.add(Calendar.MONTH, months);\n        return DateUtil.formatDay(c.getTime());\n    }\n\n    private Calendar processing(String submittedAt) {\n        Calendar c = Calendar.getInstance();\n        c.setTime(DateUtil.parseInstant(submittedAt));\n        int hour = c.get(Calendar.HOUR_OF_DAY);\n        int minute = c.get(Calendar.MINUTE);\n        boolean inTime = hour < 16 || (hour == 16 && minute == 0);\n        if (isBusinessDay(c) && inTime) {\n            return c;\n        }\n        return nextBusinessDay(c);\n    }\n\n    private Calendar nextBusinessDay(Calendar from) {\n        Calendar c = (Calendar) from.clone();\n        do {\n            c.add(Calendar.DATE, 1);\n        } while (!isBusinessDay(c));\n        return c;\n    }\n\n    private boolean isBusinessDay(Calendar c) {\n        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);\n        if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {\n            return false;\n        }\n        return !HolidayTable.isHoliday(c);\n    }\n}\n",
+          "after": "package com.rustypayments.legacy;\n\nimport com.rustypayments.PaymentCalendar;\nimport java.time.*;\nimport java.time.format.DateTimeFormatter;\nimport java.time.format.DateTimeParseException;\nimport java.time.temporal.ChronoUnit;\nimport java.util.Set;\n\npublic class LegacyPaymentCalendar implements PaymentCalendar {\n\n    private static final ZoneId WARSAW = ZoneId.of(\"Europe/Warsaw\");\n    private static final LocalTime CUTOFF = LocalTime.of(16, 0, 0);\n    private static final Set<LocalDate> HOLIDAYS = Set.of(\n        MonthDay.of(1, 1).atYear(2026), MonthDay.of(1, 6).atYear(2026),\n        MonthDay.of(5, 1).atYear(2026), MonthDay.of(5, 3).atYear(2026),\n        MonthDay.of(8, 15).atYear(2026), MonthDay.of(11, 1).atYear(2026),\n        MonthDay.of(11, 11).atYear(2026), MonthDay.of(12, 25).atYear(2026),\n        MonthDay.of(12, 26).atYear(2026)\n    );\n\n    public boolean isBusinessDay(String date) {\n        return isBusinessDay(parseDate(date));\n    }\n\n    public String processingDate(String submittedAt) {\n        ZonedDateTime time = parseInstant(submittedAt);\n        LocalDate date = time.toLocalDate();\n        if (isBusinessDay(date) && !time.toLocalTime().isAfter(CUTOFF)) {\n            return date.toString();\n        }\n        return nextBusinessDay(date).toString();\n    }\n\n    public String settlementDate(String submittedAt) {\n        return nextBusinessDay(LocalDate.parse(processingDate(submittedAt))).toString();\n    }\n\n    public int daysLate(String dueDate, String paidAt) {\n        LocalDate due = parseDate(dueDate);\n        ZonedDateTime paid = parseInstant(paidAt);\n        long days = ChronoUnit.DAYS.between(due, paid.withZoneSameInstant(WARSAW).toLocalDate());\n        return (int) Math.max(0, days);\n    }\n\n    public String addMonths(String date, int months) {\n        LocalDate start = parseDate(date);\n        LocalDate target = start.plusMonths(months);\n        if (start.getDayOfMonth() == start.lengthOfMonth()) {\n            return target.withDayOfMonth(target.lengthOfMonth()).toString();\n        }\n        return target.withDayOfMonth(Math.min(target.getDayOfMonth(), target.lengthOfMonth())).toString();\n    }\n\n    private LocalDate parseDate(String date) {\n        try {\n            LocalDate d = LocalDate.parse(date);\n            if (!d.toString().equals(date)) throw new IllegalArgumentException();\n            return d;\n        } catch (DateTimeParseException | NullPointerException e) {\n            throw new IllegalArgumentException();\n        }\n    }\n\n    private ZonedDateTime parseInstant(String instant) {\n        try {\n            return ZonedDateTime.parse(instant);\n        } catch (Exception e) {\n            throw new IllegalArgumentException();\n        }\n    }\n\n    private boolean isBusinessDay(LocalDate date) {\n        DayOfWeek dow = date.getDayOfWeek();\n        if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) return false;\n        return !HOLIDAYS.contains(MonthDay.from(date).atYear(2026));\n    }\n\n    private LocalDate nextBusinessDay(LocalDate date) {\n        LocalDate next = date.plusDays(1);\n        while (!isBusinessDay(next)) {\n            next = next.plusDays(1);\n        }\n        return next;\n    }\n}\n"
+        },
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/DateUtil.java",
+          "action": "delete",
+          "before": "package com.rustypayments.legacy;\n\nimport java.text.ParseException;\nimport java.text.SimpleDateFormat;\nimport java.util.Date;\nimport java.util.TimeZone;\n\n/**\n * DATE HELPERS\n * CREATED 03.05.2002\n * CHG 21.11.2006 - formatters made static, \"was allocating thousands of them in the nightly run\"\n * CHG 14.01.2011 - YYYY for the year, as the new standard asks\n */\npublic class DateUtil {\n\n    private static final SimpleDateFormat DAY_IN = new SimpleDateFormat(\"yyyy-MM-dd\");\n    private static final SimpleDateFormat DAY_OUT = new SimpleDateFormat(\"YYYY-MM-dd\");\n    private static final SimpleDateFormat INSTANT_IN =\n            new SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ssXXX\");\n\n    public static Date parseDay(String text) {\n        if (text == null) {\n            throw new IllegalArgumentException(\"INVALID DATE\");\n        }\n        try {\n            DAY_IN.setTimeZone(TimeZone.getDefault());\n            return DAY_IN.parse(text.trim());\n        } catch (ParseException e) {\n            throw new IllegalArgumentException(\"INVALID DATE: \" + text);\n        }\n    }\n\n    public static Date parseInstant(String text) {\n        if (text == null) {\n            throw new IllegalArgumentException(\"INVALID TIMESTAMP\");\n        }\n        try {\n            INSTANT_IN.setTimeZone(TimeZone.getDefault());\n            return INSTANT_IN.parse(text.trim());\n        } catch (ParseException e) {\n            throw new IllegalArgumentException(\"INVALID TIMESTAMP: \" + text);\n        }\n    }\n\n    public static String formatDay(Date date) {\n        DAY_OUT.setTimeZone(TimeZone.getDefault());\n        return DAY_OUT.format(date);\n    }\n}\n",
+          "after": null
+        },
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/HolidayTable.java",
+          "action": "delete",
+          "before": "package com.rustypayments.legacy;\n\nimport java.util.Calendar;\n\n/**\n * BANK HOLIDAYS (fixed dates only)\n * CHG 02.01.2005 - added 3 May after branch 0017 stayed open\n */\npublic class HolidayTable {\n\n    /** Month is 0-based, the way Calendar wants it. */\n    private static final int[][] HOLIDAYS = {\n        {0, 1},    // New Year\n        {4, 1},    // Labour Day\n        {4, 3},    // Constitution Day\n        {7, 15},   // Assumption\n        {10, 1},   // All Saints\n        {10, 11},  // Independence Day\n        {11, 25},  // Christmas\n        {11, 26}   // Boxing Day\n    };\n\n    public static boolean isHoliday(Calendar day) {\n        int month = day.get(Calendar.MONTH);\n        int date = day.get(Calendar.DAY_OF_MONTH);\n        for (int i = 0; i < HOLIDAYS.length; i++) {\n            if (HOLIDAYS[i][0] == month && HOLIDAYS[i][1] == date) {\n                return true;\n            }\n        }\n        return false;\n    }\n}\n",
+          "after": null
+        }
+      ],
+      "rejectedEdits": {},
+      "verifySeconds": 3.09,
+      "result": {
+        "escaped": false,
+        "headline": "golden 12/13, escape 8/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 12,
+        "goldenTotal": 13,
+        "escapePassed": 8,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "cutOffDoesNotDependOnTheServerZone",
+            "message": "Europe/Warsaw ==> expected: <2026-03-30> but was: <2026-03-27>"
+          },
+          {
+            "suite": "golden",
+            "test": "anyOffset",
+            "message": "expected: <2026-06-16> but was: <2026-06-15>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 2,
+      "modelSeconds": 7.03,
+      "promptTokens": 8475,
+      "completionTokens": 963,
+      "plan": "The legacy implementation uses a hardcoded 2026 year for holidays and fails to correctly handle the instant-to-local conversion for the processing date logic, leading to off-by-one errors during DST transitions and year-specific holiday checking. I will rewrite the holiday logic to be year-agnostic and ensure the processing date correctly shifts to the next business day using the specified Warsaw timezone logic.",
+      "edits": [
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/LegacyPaymentCalendar.java",
+          "action": "rewrite",
+          "before": "package com.rustypayments.legacy;\n\nimport com.rustypayments.PaymentCalendar;\nimport java.time.*;\nimport java.time.format.DateTimeFormatter;\nimport java.time.format.DateTimeParseException;\nimport java.time.temporal.ChronoUnit;\nimport java.util.Set;\n\npublic class LegacyPaymentCalendar implements PaymentCalendar {\n\n    private static final ZoneId WARSAW = ZoneId.of(\"Europe/Warsaw\");\n    private static final LocalTime CUTOFF = LocalTime.of(16, 0, 0);\n    private static final Set<LocalDate> HOLIDAYS = Set.of(\n        MonthDay.of(1, 1).atYear(2026), MonthDay.of(1, 6).atYear(2026),\n        MonthDay.of(5, 1).atYear(2026), MonthDay.of(5, 3).atYear(2026),\n        MonthDay.of(8, 15).atYear(2026), MonthDay.of(11, 1).atYear(2026),\n        MonthDay.of(11, 11).atYear(2026), MonthDay.of(12, 25).atYear(2026),\n        MonthDay.of(12, 26).atYear(2026)\n    );\n\n    public boolean isBusinessDay(String date) {\n        return isBusinessDay(parseDate(date));\n    }\n\n    public String processingDate(String submittedAt) {\n        ZonedDateTime time = parseInstant(submittedAt);\n        LocalDate date = time.toLocalDate();\n        if (isBusinessDay(date) && !time.toLocalTime().isAfter(CUTOFF)) {\n            return date.toString();\n        }\n        return nextBusinessDay(date).toString();\n    }\n\n    public String settlementDate(String submittedAt) {\n        return nextBusinessDay(LocalDate.parse(processingDate(submittedAt))).toString();\n    }\n\n    public int daysLate(String dueDate, String paidAt) {\n        LocalDate due = parseDate(dueDate);\n        ZonedDateTime paid = parseInstant(paidAt);\n        long days = ChronoUnit.DAYS.between(due, paid.withZoneSameInstant(WARSAW).toLocalDate());\n        return (int) Math.max(0, days);\n    }\n\n    public String addMonths(String date, int months) {\n        LocalDate start = parseDate(date);\n        LocalDate target = start.plusMonths(months);\n        if (start.getDayOfMonth() == start.lengthOfMonth()) {\n            return target.withDayOfMonth(target.lengthOfMonth()).toString();\n        }\n        return target.withDayOfMonth(Math.min(target.getDayOfMonth(), target.lengthOfMonth())).toString();\n    }\n\n    private LocalDate parseDate(String date) {\n        try {\n            LocalDate d = LocalDate.parse(date);\n            if (!d.toString().equals(date)) throw new IllegalArgumentException();\n            return d;\n        } catch (DateTimeParseException | NullPointerException e) {\n            throw new IllegalArgumentException();\n        }\n    }\n\n    private ZonedDateTime parseInstant(String instant) {\n        try {\n            return ZonedDateTime.parse(instant);\n        } catch (Exception e) {\n            throw new IllegalArgumentException();\n        }\n    }\n\n    private boolean isBusinessDay(LocalDate date) {\n        DayOfWeek dow = date.getDayOfWeek();\n        if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) return false;\n        return !HOLIDAYS.contains(MonthDay.from(date).atYear(2026));\n    }\n\n    private LocalDate nextBusinessDay(LocalDate date) {\n        LocalDate next = date.plusDays(1);\n        while (!isBusinessDay(next)) {\n            next = next.plusDays(1);\n        }\n        return next;\n    }\n}\n",
+          "after": "package com.rustypayments.legacy;\n\nimport com.rustypayments.PaymentCalendar;\nimport java.time.*;\nimport java.time.format.DateTimeParseException;\nimport java.time.temporal.ChronoUnit;\nimport java.util.Set;\n\npublic class LegacyPaymentCalendar implements PaymentCalendar {\n\n    private static final ZoneId WARSAW = ZoneId.of(\"Europe/Warsaw\");\n    private static final LocalTime CUTOFF = LocalTime.of(16, 0, 0);\n    private static final Set<MonthDay> HOLIDAYS = Set.of(\n        MonthDay.of(1, 1), MonthDay.of(1, 6),\n        MonthDay.of(5, 1), MonthDay.of(5, 3),\n        MonthDay.of(8, 15), MonthDay.of(11, 1),\n        MonthDay.of(11, 11), MonthDay.of(12, 25),\n        MonthDay.of(12, 26)\n    );\n\n    @Override\n    public boolean isBusinessDay(String date) {\n        return isBusinessDay(parseDate(date));\n    }\n\n    @Override\n    public String processingDate(String submittedAt) {\n        ZonedDateTime time = parseInstant(submittedAt).withZoneSameInstant(WARSAW);\n        LocalDate date = time.toLocalDate();\n        if (isBusinessDay(date) && !time.toLocalTime().isAfter(CUTOFF)) {\n            return date.toString();\n        }\n        return nextBusinessDay(date).toString();\n    }\n\n    @Override\n    public String settlementDate(String submittedAt) {\n        return nextBusinessDay(LocalDate.parse(processingDate(submittedAt))).toString();\n    }\n\n    @Override\n    public int daysLate(String dueDate, String paidAt) {\n        LocalDate due = parseDate(dueDate);\n        LocalDate paid = parseInstant(paidAt).withZoneSameInstant(WARSAW).toLocalDate();\n        long days = ChronoUnit.DAYS.between(due, paid);\n        return (int) Math.max(0, days);\n    }\n\n    @Override\n    public String addMonths(String date, int months) {\n        LocalDate start = parseDate(date);\n        boolean isEndOfMonth = start.getDayOfMonth() == start.lengthOfMonth();\n        LocalDate target = start.plusMonths(months);\n        if (isEndOfMonth) {\n            return target.withDayOfMonth(target.lengthOfMonth()).toString();\n        }\n        int day = Math.min(start.getDayOfMonth(), target.lengthOfMonth());\n        return target.withDayOfMonth(day).toString();\n    }\n\n    private LocalDate parseDate(String date) {\n        try {\n            LocalDate d = LocalDate.parse(date);\n            return d;\n        } catch (DateTimeParseException | NullPointerException e) {\n            throw new IllegalArgumentException();\n        }\n    }\n\n    private ZonedDateTime parseInstant(String instant) {\n        try {\n            return ZonedDateTime.parse(instant);\n        } catch (Exception e) {\n            throw new IllegalArgumentException();\n        }\n    }\n\n    private boolean isBusinessDay(LocalDate date) {\n        DayOfWeek dow = date.getDayOfWeek();\n        if (dow == DayOfWeek.SATURDAY || dow == DayOfWeek.SUNDAY) return false;\n        return !HOLIDAYS.contains(MonthDay.from(date));\n    }\n\n    private LocalDate nextBusinessDay(LocalDate date) {\n        LocalDate next = date.plusDays(1);\n        while (!isBusinessDay(next)) {\n            next = next.plusDays(1);\n        }\n        return next;\n    }\n}\n"
+        }
+      ],
+      "rejectedEdits": {},
+      "verifySeconds": 3.15,
+      "result": {
+        "escaped": true,
+        "headline": "golden 13/13, escape 9/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 9,
+        "escapeTotal": 9,
+        "failures": []
+      }
+    }
+  ],
+  "escaped": true,
+  "attemptsUsed": 2,
+  "promptTokens": 17831,
+  "completionTokens": 2021,
+  "totalSeconds": 67.08
+}
