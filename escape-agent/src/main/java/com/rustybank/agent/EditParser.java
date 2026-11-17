@@ -18,13 +18,20 @@ import java.util.regex.Pattern;
  *
  * === DELETE: path/to/Old.java ===
  * </pre>
+ *
+ * The reader works line by line and accepts small deviations in the markers (a missing closing
+ * "===", different case, "=== END ===", indentation), because those say nothing about whether a
+ * model can solve the room. A file block that never ends is dropped: it is most likely cut off,
+ * and half a file is worse than none.
  */
 public final class EditParser {
 
-    private static final Pattern BLOCK = Pattern.compile(
-            "^=== FILE: (.+?) ===[ \\t]*\\R(.*?)^=== END FILE ===[ \\t]*$"
-                    + "|^=== DELETE: (.+?) ===[ \\t]*$",
-            Pattern.MULTILINE | Pattern.DOTALL);
+    private static final Pattern FILE_HEADER =
+            Pattern.compile("^\\s*={3,}\\s*FILE:\\s*(.+?)\\s*(?:={3,})?\\s*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern DELETE_HEADER =
+            Pattern.compile("^\\s*={3,}\\s*DELETE:\\s*(.+?)\\s*(?:={3,})?\\s*$", Pattern.CASE_INSENSITIVE);
+    private static final Pattern END_MARKER =
+            Pattern.compile("^\\s*={3,}\\s*END(?:\\s+FILE)?\\s*(?:={3,})?\\s*$", Pattern.CASE_INSENSITIVE);
 
     private EditParser() {
     }
@@ -33,25 +40,52 @@ public final class EditParser {
     }
 
     public static Parsed parse(String reply) {
-        String text = reply.replace("\r\n", "\n");
+        String[] lines = reply.replace("\r\n", "\n").split("\n", -1);
         List<Edit> edits = new ArrayList<>();
-        Matcher matcher = BLOCK.matcher(text);
-        int firstBlock = -1;
-        while (matcher.find()) {
-            if (firstBlock < 0) {
-                firstBlock = matcher.start();
+        StringBuilder plan = new StringBuilder();
+        String openPath = null;
+        StringBuilder body = new StringBuilder();
+        boolean seenBlock = false;
+
+        for (String line : lines) {
+            Matcher file = FILE_HEADER.matcher(line);
+            Matcher delete = DELETE_HEADER.matcher(line);
+            boolean isFile = file.matches();
+            boolean isDelete = !isFile && delete.matches();
+
+            if (openPath != null && END_MARKER.matcher(line).matches()) {
+                edits.add(new Edit(openPath, stripFences(body.toString())));
+                openPath = null;
+                body.setLength(0);
+                continue;
             }
-            if (matcher.group(1) != null) {
-                edits.add(new Edit(matcher.group(1).trim(), stripFences(matcher.group(2))));
-            } else {
-                edits.add(new Edit(matcher.group(3).trim(), null));
+            if (isFile || isDelete) {
+                if (openPath != null) {
+                    // The previous block forgot its end marker but a new one starts: keep it.
+                    edits.add(new Edit(openPath, stripFences(body.toString())));
+                    body.setLength(0);
+                    openPath = null;
+                }
+                seenBlock = true;
+                if (isDelete) {
+                    edits.add(new Edit(delete.group(1).trim(), null));
+                } else {
+                    openPath = file.group(1).trim();
+                }
+                continue;
+            }
+            if (openPath != null) {
+                body.append(line).append('\n');
+            } else if (!seenBlock) {
+                plan.append(line).append('\n');
             }
         }
-        String plan = (firstBlock < 0 ? text : text.substring(0, firstBlock)).trim();
-        if (plan.regionMatches(true, 0, "PLAN:", 0, 5)) {
-            plan = plan.substring(5).trim();
+
+        String planText = plan.toString().trim();
+        if (planText.regionMatches(true, 0, "PLAN:", 0, 5)) {
+            planText = planText.substring(5).trim();
         }
-        return new Parsed(plan, List.copyOf(edits));
+        return new Parsed(planText, List.copyOf(edits));
     }
 
     /** Models like to wrap code in markdown fences even when told not to. */

@@ -9,8 +9,6 @@ Which models escape which rooms, how many attempts it takes, and what it costs. 
 | gemini-3-flash-preview | 4/4 (100%) | 4 | 1.0 | 11,886 | 83 |
 | gemma-4-31b-it | 9/9 (100%) +3 err | 6 | 1.33 | 15,210 | 333 |
 | gemma-4-26b-a4b-it | 8/9 (89%) +4 err | 7 | 1.12 | 19,965 | 379 |
-| gemini-3.1-flash-lite | 0/12 (0%) | 0 | - | 61,870 | 54 |
-| gemini-2.5-flash-lite | - +12 err | 0 | - | - | - |
 
 ## Room by room
 
@@ -21,7 +19,5 @@ Each cell is escapes/runs, with the average number of attempts of the escapes in
 | gemini-3-flash-preview | 1/1 (1.0) | 1/1 (1.0) | 1/1 (1.0) | 1/1 (1.0) |
 | gemma-4-31b-it | 3/3 (1.0) | 3/3 (1.3) | 2/2 (2.0) +1 err | 1/1 (1.0) +2 err |
 | gemma-4-26b-a4b-it | 4/4 (1.0) | 3/3 (1.0) | 1/2 (2.0) +1 err | error |
-| gemini-3.1-flash-lite | 0/3 | 0/3 | 0/3 | 0/3 |
-| gemini-2.5-flash-lite | error | error | error | error |
 
 A run that stopped because a model call failed (rate limit, outage) is shown as `err` and is left out of the percentages.

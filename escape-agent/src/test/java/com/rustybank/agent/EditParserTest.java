@@ -35,4 +35,31 @@ class EditParserTest {
         assertEquals("I am not sure what to do.", parsed.plan());
         assertTrue(parsed.edits().isEmpty());
     }
+
+    @Test
+    void headerWithoutClosingEqualsDoesNotSwallowTheCode() {
+        String reply = "PLAN: x\n=== FILE: a/B.java\nclass B {}\n=== END FILE ===\n";
+        EditParser.Parsed parsed = EditParser.parse(reply);
+        assertEquals(1, parsed.edits().size());
+        assertEquals("a/B.java", parsed.edits().get(0).path());
+        assertEquals("class B {}\n", parsed.edits().get(0).content());
+    }
+
+    @Test
+    void acceptsLooseEndMarkersAndKeepsABlockThatForgotItsEnd() {
+        String reply = "PLAN: x\n=== file: a/B.java ===\nclass B {}\n=== END ===\n"
+                + "=== FILE: a/C.java ===\nclass C {}\n"
+                + "=== FILE: a/D.java ===\nclass D {}\n=== END FILE ===\n";
+        EditParser.Parsed parsed = EditParser.parse(reply);
+        assertEquals(3, parsed.edits().size());
+        assertEquals("class C {}\n", parsed.edits().get(1).content());
+        assertEquals("a/D.java", parsed.edits().get(2).path());
+    }
+
+    @Test
+    void aBlockThatIsCutOffAtTheEndIsDropped() {
+        EditParser.Parsed parsed = EditParser.parse("PLAN: x\n=== FILE: a/B.java ===\nclass B {\n");
+        assertTrue(parsed.edits().isEmpty());
+        assertEquals("x", parsed.plan());
+    }
 }
