@@ -1,0 +1,15 @@
+{
+  "id": "03-injection-vault",
+  "name": "The Injection Vault",
+  "legacyProblem": "SQL built by gluing text together",
+  "module": "rusty-vault",
+  "editable": ["rusty-vault/src/main/java/"],
+  "locked": [
+    "rusty-vault/src/main/java/com/rustyvault/CustomerDirectory.java",
+    "rusty-vault/src/test/java/com/rustyvault/rooms/vault/VaultGoldenMasterTest.java",
+    "rusty-vault/src/test/java/com/rustyvault/rooms/vault/VaultEscapeTest.java"
+  ],
+  "goldenTests": "com.rustyvault.rooms.vault.VaultGoldenMasterTest",
+  "escapeTests": "com.rustyvault.rooms.vault.VaultEscapeTest",
+  "escapeCondition": "locked files untouched, all golden tests pass, all escape tests pass"
+}

@@ -1,0 +1,3 @@
+d179d74da4c40a02cc38e428a2dc70f0113af0cac08ef5fbf436a68544b5a991  rusty-vault/src/main/java/com/rustyvault/CustomerDirectory.java
+2d8970232dfd651641e92d1ea0052eb12d9b18758d6da10d996fd73288a51dd5  rusty-vault/src/test/java/com/rustyvault/rooms/vault/VaultEscapeTest.java
+a773afca6b430e0a110b28280e317ac98bcb7c626a08a2f165459890892297d0  rusty-vault/src/test/java/com/rustyvault/rooms/vault/VaultGoldenMasterTest.java

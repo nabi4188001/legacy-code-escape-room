@@ -14,7 +14,7 @@ project turns that job into something you can watch, score and compare across mo
 |---|---|---|---|
 | 1 | [The Penny Room](rooms/01-penny-room/ROOM.md) | Money stored as `double` | Built |
 | 2 | [The Time Trap](rooms/02-time-trap/ROOM.md) | `Date`, `Calendar` and a server clock nobody can trust | Built |
-| 3 | The Injection Vault | SQL built by string concatenation | Planned |
+| 3 | [The Injection Vault](rooms/03-injection-vault/ROOM.md) | SQL built by gluing text together | Built |
 | 4 | The God Class | A 2,000-line `TransactionManager` | Planned |
 | 5 | Boss Room | Two transfers racing for one balance | Planned |
 

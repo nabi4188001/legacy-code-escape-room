@@ -26,5 +26,10 @@ jobs:
       - name: Room 2 escape tests (red until the room is escaped)
         continue-on-error: true
         run: mvn -B -f rusty-payments/pom.xml test -Dgroups=escape
+      - name: Room 3 golden master (must always be green)
+        run: mvn -B -f rusty-vault/pom.xml test -Dgroups=golden
+      - name: Room 3 escape tests (red until the room is escaped)
+        continue-on-error: true
+        run: mvn -B -f rusty-vault/pom.xml test -Dgroups=escape
       - name: Agent tests, including a scripted escape judged by the real build
         run: mvn -B -f escape-agent/pom.xml test
