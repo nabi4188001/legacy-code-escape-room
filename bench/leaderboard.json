@@ -61,14 +61,14 @@
     },
     {
       "model": "gemma-4-31b-it",
-      "runs": 17,
-      "errors": 7,
-      "escapes": 17,
+      "runs": 19,
+      "errors": 9,
+      "escapes": 19,
       "escapeRate": 1.0,
-      "firstTryEscapes": 12,
-      "avgAttemptsWhenEscaped": 1.29,
-      "avgTokens": 15367,
-      "avgSeconds": 296,
+      "firstTryEscapes": 13,
+      "avgAttemptsWhenEscaped": 1.32,
+      "avgTokens": 16671,
+      "avgSeconds": 345,
       "rooms": {
         "01-penny-room": {
           "runs": 5,
@@ -101,21 +101,21 @@
           "avgSeconds": 357
         },
         "04-god-class": {
-          "runs": 2,
-          "errors": 4,
-          "escapes": 2,
+          "runs": 4,
+          "errors": 6,
+          "escapes": 4,
           "escapeRate": 1.0,
-          "firstTryEscapes": 1,
+          "firstTryEscapes": 2,
           "avgAttemptsWhenEscaped": 1.5,
-          "avgTokens": 28220,
-          "avgSeconds": 452
+          "avgTokens": 27991,
+          "avgSeconds": 606
         }
       }
     },
     {
       "model": "gemma-4-26b-a4b-it",
       "runs": 17,
-      "errors": 8,
+      "errors": 12,
       "escapes": 14,
       "escapeRate": 0.824,
       "firstTryEscapes": 12,
@@ -155,7 +155,7 @@
         },
         "04-god-class": {
           "runs": 0,
-          "errors": 6,
+          "errors": 10,
           "escapes": 0,
           "escapeRate": null,
           "firstTryEscapes": 0,
