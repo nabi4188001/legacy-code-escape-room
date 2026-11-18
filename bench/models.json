@@ -56,14 +56,6 @@
     "system_as_user": false
   },
   {
-    "id": "or-inkling-2-small",
-    "label": "Inkling 2 Small (free)",
-    "base_url": "https://openrouter.ai/api/v1",
-    "model": "thinkingmachines/inkling-2-small:free",
-    "secret": "OR_KEY",
-    "system_as_user": false
-  },
-  {
     "id": "or-nemotron-3.5-lightning",
     "label": "NVIDIA Nemotron 3.5 Lightning (free)",
     "base_url": "https://openrouter.ai/api/v1",

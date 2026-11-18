@@ -51,7 +51,12 @@ jobs:
           java-version: '21'
           cache: maven
       - name: Build the agent
-        run: mvn -B -q -f escape-agent/pom.xml package -DskipTests
+        run: |
+          for attempt in 1 2 3; do
+            mvn -B -q -f escape-agent/pom.xml package -DskipTests && exit 0
+            echo "Build failed (attempt $attempt), retrying"; sleep 20
+          done
+          exit 1
       - name: Run the rooms
         env:
           LLM_API_KEY: ${{ secrets[matrix.secret] }}
