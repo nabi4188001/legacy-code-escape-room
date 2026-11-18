@@ -30,5 +30,45 @@
     "model": "gemma-4-26b-a4b-it",
     "secret": "LLM_API_KEY",
     "system_as_user": true
+  },
+  {
+    "id": "or-nemotron-3-ultra-550b-a55b",
+    "label": "NVIDIA Nemotron 3 Ultra (free)",
+    "base_url": "https://openrouter.ai/api/v1",
+    "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+    "secret": "OR_KEY",
+    "system_as_user": false
+  },
+  {
+    "id": "or-north-mini-code",
+    "label": "Cohere North Mini Code (free)",
+    "base_url": "https://openrouter.ai/api/v1",
+    "model": "cohere/north-mini-code:free",
+    "secret": "OR_KEY",
+    "system_as_user": false
+  },
+  {
+    "id": "or-flint-v1.0",
+    "label": "Recursive Flint (free)",
+    "base_url": "https://openrouter.ai/api/v1",
+    "model": "recursive/flint-v1.0:free",
+    "secret": "OR_KEY",
+    "system_as_user": false
+  },
+  {
+    "id": "or-inkling-2-small",
+    "label": "Inkling 2 Small (free)",
+    "base_url": "https://openrouter.ai/api/v1",
+    "model": "thinkingmachines/inkling-2-small:free",
+    "secret": "OR_KEY",
+    "system_as_user": false
+  },
+  {
+    "id": "or-nemotron-3.5-lightning",
+    "label": "NVIDIA Nemotron 3.5 Lightning (free)",
+    "base_url": "https://openrouter.ai/api/v1",
+    "model": "nvidia/nemotron-3.5-lightning:free",
+    "secret": "OR_KEY",
+    "system_as_user": false
   }
 ]
