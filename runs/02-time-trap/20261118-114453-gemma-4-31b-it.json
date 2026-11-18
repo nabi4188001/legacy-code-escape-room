@@ -1,0 +1,124 @@
+{
+  "room": "02-time-trap",
+  "roomName": "The Time Trap",
+  "model": "gemma-4-31b-it",
+  "startedAt": "2026-11-18T11:42:22.262240915Z",
+  "maxAttempts": 5,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 13/13, escape 0/9",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 13,
+    "goldenTotal": 13,
+    "escapePassed": 0,
+    "escapeTotal": 9,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "daysLateDoesNotDependOnTheServerZone",
+        "message": "UTC ==> expected: <1> but was: <0>"
+      },
+      {
+        "suite": "escape",
+        "test": "epiphanyIsABankHoliday",
+        "message": "expected: <false> but was: <true>"
+      },
+      {
+        "suite": "escape",
+        "test": "impossibleDatesAreRefused",
+        "message": "2026-02-30 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "settlementAtTheEndOfTheYear",
+        "message": "expected: <2026-12-28> but was: <2027-12-28>"
+      },
+      {
+        "suite": "escape",
+        "test": "cutOffDoesNotDependOnTheServerZone",
+        "message": "Europe/Warsaw ==> expected: <2026-07-02> but was: <2026-07-01>"
+      },
+      {
+        "suite": "escape",
+        "test": "cutOffIsToTheSecond",
+        "message": "expected: <2026-03-26> but was: <2026-03-25>"
+      },
+      {
+        "suite": "escape",
+        "test": "monthEndStaysMonthEnd",
+        "message": "expected: <2026-03-31> but was: <2026-03-28>"
+      },
+      {
+        "suite": "escape",
+        "test": "daysLateThroughTheClockChange",
+        "message": "expected: <3> but was: <2>"
+      },
+      {
+        "suite": "escape",
+        "test": "manyThreadsAtOnce",
+        "message": "expected: <[]> but was: <[processing(2026-03-25T17:30:00+01:00) gave 2027-03-26, expected 2026-03-26, processing(2026-03-27T17:00:00+01:00) threw java.lang.NumberFormatException: For input string: \"\", processing(2026-03-25T10:15:00+01:00) gave 2194-10-27, expected 2026-03-25]>"
+      }
+    ]
+  },
+  "status": "completed",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 145.8,
+      "promptTokens": 9344,
+      "completionTokens": 1331,
+      "plan": "<thought>The `PaymentCalendar` interface defines business rules for processing dates, settlement dates, late payment calculation, and adding months, all anchored to the `Europe/Warsaw` time zone.\n\n    *   `Date`, `Calendar`, and `SimpleDateFormat` are used.\n    *   `SimpleDateFormat` is not thread-safe, but the legacy code uses static instances, which explains the `manyThreadsAtOnce` failures (e.g., `NumberFormatException`, weird dates like `2194-10-27`).\n    *   `TimeZone.getDefault()` is used, making the logic dependent on the server's local time zone.\n    *   `DAY_MILLIS = 24L * 60 * 60 * 1000` is used to calculate `daysLate`, which fails during Daylight Saving Time (DST) changes.\n    *   `HolidayTable` is missing \"6 Jan\" (Epiphany).\n    *   `DateUtil.parseDay` and `parseInstant` don't validate if the date is *real* (e.g., `2026-02-30` might be parsed by `SimpleDateFormat` as `2026-03-02` because it's lenient).\n    *   `DAY_OUT` uses `YYYY` instead of `yyyy`. `YYYY` is the \"week-based year\", which causes issues at the end of the year (e.g., `2026-12-30` might be formatted as `2027`).\n    *   `addMonths` using `Calendar.add` doesn't strictly follow the \"month-end stays month-end\" rule.\n\n    *   Use `java.time` (Java 8+ API, Java 21 here).\n    *   Force all operations into `ZoneId.of(\"Europe/Warsaw\")`.\n    *   Use `LocalDate`, `ZonedDateTime`, `OffsetDateTime` for precision.\n    *   `isBusinessDay`: Check if it's a weekday AND not a holiday.\n    *   `processingDate`: Convert `submittedAt` to Warsaw time. If it's a business day and $\\le 16:00:00$, it's today. Otherwise, the next business day.\n    *   `settlementDate`: The first business day strictly after the processing date.\n    *   `daysLate`: Difference in calendar days between due date and paid date (in Warsaw time).\n    *   `addMonths`: Implement the specific month-end logic.\n\n    *   `isBusinessDay(String date)`:\n        *   Parse `yyyy-MM-dd`.\n        *   Check day of week (Sat/Sun).\n        *   Check if (month, day) is in the holiday list.\n        *   Holidays: 1 Jan, 6 Jan, 1 May, 3 May, 15 Aug, 1 Nov, 11 Nov, 25 Dec, 26 Dec.\n\n    *   `processingDate(String submittedAt)`:\n        *   Parse `submittedAt` as `OffsetDateTime`.\n        *   Convert to `ZonedDateTime` in `Europe/Warsaw`.\n        *   Get `LocalDate` and `LocalTime`.\n        *   If `isBusinessDay(localDate)` and `localTime` $\\le 16:00:00$, return `localDate`.\n        *   Else, find the next business day after `localDate`.\n\n    *   `settlementDate(String submittedAt)`:\n        *   Find `processingDate(submittedAt)`.\n        *   Find the first business day strictly after that date.\n\n    *   `daysLate(String dueDate, String paidAt)`:\n        *   Parse `dueDate` as `LocalDate`.\n        *   Parse `paidAt` as `OffsetDateTime` $\\rightarrow$ convert to Warsaw $\\rightarrow$ get `LocalDate`.\n        *   Calculate `ChronoUnit.DAYS.between(due, paid)`.\n        *   Return `max(0, result)`.\n\n    *   `addMonths(String date, int months)`:\n        *   Parse `date` as `LocalDate`.\n        *   Rule 1: \"The day of the month is kept where the target month has it, otherwise the last day of the target month is used.\" (This is standard `LocalDate.plusMonths` behavior).\n        *   Rule 2: \"Month ends stay month ends: if the starting date is the last day of its month, the result is the last day of the target month.\" (This is *not* standard `plusMonths` behavior).\n        *   Logic for `addMonths`:\n            1. Check if `date` is the last day of its month.\n            2. If yes, the result is the last day of the target month.\n            3. If no, use `date.plusMonths(months)`.\n\n    *   `2026-02-30` should throw `IllegalArgumentException`. `LocalDate.parse` with `DateTimeFormatter.ISO_LOCAL_DATE` is strict.\n\n    *   `RustyPayments`: Updated to return new implementation.\n    *   `PaymentCalendarImpl`: New class implementing `PaymentCalendar`.\n    *   Delete `legacy` package files.\n\n    *   `isBusinessDay`: Saturday/Sunday = no. Holidays = no.\n    *   `processingDate`:\n        *   Warsaw Time.\n        *   $\\le 16:00:00$ on business day $\\rightarrow$ that day.\n        *   $> 16:00:00$ or not business day $\\rightarrow$ next business day after the local date.\n    *   `settlementDate`: First business day after `processingDate`.\n    *   `daysLate`: `max(0, days between due and paid_at_warsaw)`.\n    *   `addMonths`:\n        *   Standard `plusMonths` handles the \"clamp to end of month\" (e.g., Jan 31 + 1 mo = Feb 28).\n        *   Special case: If original was last day of month, result must be last day of target month.\n        *   Example: Feb 28 2026 (last day) + 1 mo = March 31 2026.\n        *   Example: Feb 28 2024 (not last day) + 1 mo = March 28 2024.\n\n    *   Use `DateTimeFormatter.ISO_LOCAL_DATE` for `yyyy-MM-dd`.\n    *   Use `OffsetDateTime.parse` for `submittedAt` and `paidAt`.\n    *   Use `ZoneId.of(\"Europe/Warsaw\")`.\n    *   Verify holiday list: 1 Jan, 6 Jan, 1 May, 3 May, 15 Aug, 1 Nov, 11 Nov, 25 Dec, 26 Dec.\n\n    *   \"The day of the month is kept where the target month has it, otherwise the last day of the target month is used. Month ends stay month ends: if the starting date is the last day of its month, the result is the last day of the target month.\"\n    *   Scenario 1: `2026-01-15` + 1 month $\\rightarrow$ `2026-02-15`. (Day kept).\n    *   Scenario 2: `2026-01-31` + 1 month $\\rightarrow$ `2026-02-28`. (Target month doesn't have 31, use last day).\n    *   Scenario 3: `2026-02-28` + 1 month $\\rightarrow$ `2026-03-31`. (Original was last day of Feb, result must be last day of March).\n    *   Scenario 4: `2024-02-28` + 1 month $\\rightarrow$ `2024-03-28`. (Original was NOT last day of Feb, just add month).\n\n    Refined logic:\n    ```java\n    LocalDate start = LocalDate.parse(date);\n    boolean isLastDay = start.getDayOfMonth() == start.lengthOfMonth();\n    LocalDate result = start.plusMonths(months);\n    if (isLastDay) {\n        result = result.withDayOfMonth(result.lengthOfMonth());\n    }\n    ```\n\n    Wait, is `start.plusMonths(months)` sufficient for Scenario 2?\n    `2026-01-31.plusMonths(1)` is `2026-02-28`. Correct.\n    What about Scenario 3?\n    `2026-02-28.plusMonths(1)` is `2026-03-28`.\n    The rule says: \"Month ends stay month ends\".\n    So if `2026-02-28` is the last day, the result should be `2026-03-31`.\n    My refined logic:\n    `isLastDay` = true.\n    `result` = `2026-03-28`.\n    `result = result.withDayOfMonth(31)` $\\rightarrow$ `2026-03-31`. Correct.\n\n    *   `isBusinessDay(\"2026-01-06\")`: False. Correct.\n    *   `processingDate(\"2026-01-06T10:00:00+01:00\")`: 2026-01-06 is holiday $\\rightarrow$ next business day $\\rightarrow$ 2026-01-07. Correct.\n    *   `settlementDate(\"2026-01-05T10:00:00+01:00\")`: Processing date is 2026-01-05. Settlement is first business day after $\\rightarrow$ 2026-01-06 (holiday) $\\rightarrow$ 2026-01-07. Correct.\n\n    *   Saturdays/Sundays not business days.\n    *   Holidays not business days.\n    *    processing:\n        - Convert to Warsaw.\n        - If `isBusinessDay(today)` and `time <= 16:00:00` $\\rightarrow$ today.\n        - Else $\\rightarrow$ next business day after today.\n    *   settlement:\n        - processing date.\n        - first business day strictly after processing date.\n\n    *   `2026-03-27T17:00:00+01:00` (Friday)\n    *   In Warsaw: `2026-03-27T17:00:00+01:00`.\n    *   `isBusinessDay(\"2026-03-27\")` is true.\n    *   `time` is 17:00:00, which is $> 16:00:00$.\n    *   Processing date = next business day after `2026-03-27`.\n    *   Sat 28th, Sun 29th (not biz).\n    *   Mon 30th (biz).\n    *   Processing Date = `2026-03-30`.\n    *   Settlement Date = first business day after `2026-03-30` = `2026-03-31`.\n    *   Matches `TimeTrapGoldenMasterTest.settlement()`: `assertEquals(\"2026-03-31\", calendar.settlementDate(\"2026-03-27T17:00:00+01:00\"));` Correct.\n\n    *   `submittedAt` format: `ISO-8601 to the second with an offset`. `OffsetDateTime.parse()` handles this.\n    *   `date` format: `yyyy-MM-dd`. `LocalDate.parse()` handles this.\n    *   `IllegalArgumentException` for null or invalid formats.\n    *   `Europe/Warsaw` zone.\n\n    Wait, `OffsetDateTime.parse` is strict about ISO-8601, but the contract says \"An instant without an offset is ambiguous and is refused.\"\n    Example: `2026-03-25T10:00:00` should be refused. `OffsetDateTime.parse` will throw `DateTimeParseException` if the offset is missing.\n    I need to wrap these in `IllegalArgumentException`.\n\n    Also, the contract says `yyyy-MM-dd` must be a \"real calendar date\". `LocalDate.parse` is strict by default.\n\n    Wait, `2026-03-25T16:00:00+01:00` is in time. `2026-03-25T16:00:01+01:00` is not.\n    My logic: `localTime.isBefore(LocalTime.of(16, 0)) || localTime.equals(LocalTime.of(16, 0))`. Correct.\n\n    What about `daysLate` for early payments?\n    `assertEquals(0, calendar.daysLate(\"2026-06-10\", \"2026-06-01T10:00:00+02:00\"));`\n    `due` = 2026-06-10. `paid` = 2026-06-01.\n    `daysBetween(due, paid)` = -9.\n    `max(0, -9)` = 0. Correct.</thought>PLAN: The legacy code uses non-thread-safe `SimpleDateFormat`, depends on the server's default time zone instead of fixing it to `Europe/Warsaw`, uses imprecise millisecond math for day differences (failing during DST changes), and has incorrect holiday and month-end logic. I will rewrite the implementation using the `java.time` API to ensure thread safety, time zone correctness, and strict adherence to the business rules.",
+      "edits": [
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/RustyPayments.java",
+          "action": "rewrite",
+          "before": "package com.rustypayments;\n\nimport com.rustypayments.legacy.LegacyPaymentCalendar;\n\n/**\n * Front door of the payments wing. The tests only call {@link #openCalendar()}, so its\n * signature has to survive any refactoring. What it returns is fair game.\n */\npublic final class RustyPayments {\n\n    private RustyPayments() {\n    }\n\n    public static PaymentCalendar openCalendar() {\n        return new LegacyPaymentCalendar();\n    }\n}\n",
+          "after": "package com.rustypayments;\n\nimport com.rustypayments.legacy.PaymentCalendarImpl;\n\n/**\n * Front door of the payments wing. The tests only call {@link #openCalendar()}, so its\n * signature has to survive any refactoring. What it returns is fair game.\n */\npublic final class RustyPayments {\n\n    private RustyPayments() {\n    }\n\n    public static PaymentCalendar openCalendar() {\n        return new PaymentCalendarImpl();\n    }\n}\n"
+        },
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/PaymentCalendarImpl.java",
+          "action": "create",
+          "before": null,
+          "after": "package com.rustypayments.legacy;\n\nimport com.rustypayments.PaymentCalendar;\n\nimport java.time.*;\nimport java.time.format.DateTimeFormatter;\nimport java.time.format.DateTimeParseException;\nimport java.time.temporal.ChronoUnit;\nimport java.util.Set;\n\npublic class PaymentCalendarImpl implements PaymentCalendar {\n\n    private static final ZoneId BANK_ZONE = ZoneId.of(\"Europe/Warsaw\");\n    private static final LocalTime CUT_OFF_TIME = LocalTime.of(16, 0);\n    private static final Set<MonthDay> HOLIDAYS = Set.of(\n            MonthDay.of(Month.JANUARY, 1),\n            MonthDay.of(Month.JANUARY, 6),\n            MonthDay.of(Month.MAY, 1),\n            MonthDay.of(Month.MAY, 3),\n            MonthDay.of(Month.AUGUST, 15),\n            MonthDay.of(Month.NOVEMBER, 1),\n            MonthDay.of(Month.NOVEMBER, 11),\n            MonthDay.of(Month.DECEMBER, 25),\n            MonthDay.of(Month.DECEMBER, 26)\n    );\n\n    @Override\n    public boolean isBusinessDay(String date) {\n        LocalDate ld = parseDate(date);\n        if (ld.getDayOfWeek() == DayOfWeek.SATURDAY || ld.getDayOfWeek() == DayOfWeek.SUNDAY) {\n            return false;\n        }\n        return !HOLIDAYS.contains(MonthDay.from(ld));\n    }\n\n    @Override\n    public String processingDate(String submittedAt) {\n        ZonedDateTime zdt = parseInstantToBankTime(submittedAt);\n        LocalDate localDate = zdt.toLocalDate();\n        LocalTime localTime = zdt.toLocalTime();\n\n        if (isBusinessDay(localDate.toString()) && (localTime.isBefore(CUT_OFF_TIME) || localTime.equals(CUT_OFF_TIME))) {\n            return localDate.toString();\n        }\n\n        return nextBusinessDay(localDate).toString();\n    }\n\n    @Override\n    public String settlementDate(String submittedAt) {\n        LocalDate processing = LocalDate.parse(processingDate(submittedAt));\n        return nextBusinessDay(processing).toString();\n    }\n\n    @Override\n    public int daysLate(String dueDate, String paidAt) {\n        LocalDate due = parseDate(dueDate);\n        LocalDate paid = parseInstantToBankTime(paidAt).toLocalDate();\n        long days = ChronoUnit.DAYS.between(due, paid);\n        return (int) Math.max(0, days);\n    }\n\n    @Override\n    public String addMonths(String date, int months) {\n        LocalDate start = parseDate(date);\n        boolean isLastDay = start.getDayOfMonth() == start.lengthOfMonth();\n        LocalDate result = start.plusMonths(months);\n        if (isLastDay) {\n            result = result.withDayOfMonth(result.lengthOfMonth());\n        }\n        return result.toString();\n    }\n\n    private LocalDate nextBusinessDay(LocalDate from) {\n        LocalDate current = from.plusDays(1);\n        while (!isBusinessDay(current.toString())) {\n            current = current.plusDays(1);\n        }\n        return current;\n    }\n\n    private LocalDate parseDate(String date) {\n        if (date == null) throw new IllegalArgumentException(\"Date cannot be null\");\n        try {\n            return LocalDate.parse(date, DateTimeFormatter.ISO_LOCAL_DATE);\n        } catch (DateTimeParseException e) {\n            throw new IllegalArgumentException(\"Invalid date format: \" + date);\n        }\n    }\n\n    private ZonedDateTime parseInstantToBankTime(String instant) {\n        if (instant == null) throw new IllegalArgumentException(\"Instant cannot be null\");\n        try {\n            // OffsetDateTime ensures an offset is present. \n            // ISO_OFFSET_DATE_TIME is strict about offsets.\n            OffsetDateTime odt = OffsetDateTime.parse(instant, DateTimeFormatter.ISO_OFFSET_DATE_TIME);\n            return odt.atZoneSameInstant(BANK_ZONE);\n        } catch (DateTimeParseException e) {\n            throw new IllegalArgumentException(\"Invalid instant format: \" + instant);\n        }\n    }\n}\n"
+        },
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/DateUtil.java",
+          "action": "delete",
+          "before": "package com.rustypayments.legacy;\n\nimport java.text.ParseException;\nimport java.text.SimpleDateFormat;\nimport java.util.Date;\nimport java.util.TimeZone;\n\n/**\n * DATE HELPERS\n * CREATED 03.05.2002\n * CHG 21.11.2006 - formatters made static, \"was allocating thousands of them in the nightly run\"\n * CHG 14.01.2011 - YYYY for the year, as the new standard asks\n */\npublic class DateUtil {\n\n    private static final SimpleDateFormat DAY_IN = new SimpleDateFormat(\"yyyy-MM-dd\");\n    private static final SimpleDateFormat DAY_OUT = new SimpleDateFormat(\"YYYY-MM-dd\");\n    private static final SimpleDateFormat INSTANT_IN =\n            new SimpleDateFormat(\"yyyy-MM-dd'T'HH:mm:ssXXX\");\n\n    public static Date parseDay(String text) {\n        if (text == null) {\n            throw new IllegalArgumentException(\"INVALID DATE\");\n        }\n        try {\n            DAY_IN.setTimeZone(TimeZone.getDefault());\n            return DAY_IN.parse(text.trim());\n        } catch (ParseException e) {\n            throw new IllegalArgumentException(\"INVALID DATE: \" + text);\n        }\n    }\n\n    public static Date parseInstant(String text) {\n        if (text == null) {\n            throw new IllegalArgumentException(\"INVALID TIMESTAMP\");\n        }\n        try {\n            INSTANT_IN.setTimeZone(TimeZone.getDefault());\n            return INSTANT_IN.parse(text.trim());\n        } catch (ParseException e) {\n            throw new IllegalArgumentException(\"INVALID TIMESTAMP: \" + text);\n        }\n    }\n\n    public static String formatDay(Date date) {\n        DAY_OUT.setTimeZone(TimeZone.getDefault());\n        return DAY_OUT.format(date);\n    }\n}\n",
+          "after": null
+        },
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/HolidayTable.java",
+          "action": "delete",
+          "before": "package com.rustypayments.legacy;\n\nimport java.util.Calendar;\n\n/**\n * BANK HOLIDAYS (fixed dates only)\n * CHG 02.01.2005 - added 3 May after branch 0017 stayed open\n */\npublic class HolidayTable {\n\n    /** Month is 0-based, the way Calendar wants it. */\n    private static final int[][] HOLIDAYS = {\n        {0, 1},    // New Year\n        {4, 1},    // Labour Day\n        {4, 3},    // Constitution Day\n        {7, 15},   // Assumption\n        {10, 1},   // All Saints\n        {10, 11},  // Independence Day\n        {11, 25},  // Christmas\n        {11, 26}   // Boxing Day\n    };\n\n    public static boolean isHoliday(Calendar day) {\n        int month = day.get(Calendar.MONTH);\n        int date = day.get(Calendar.DAY_OF_MONTH);\n        for (int i = 0; i < HOLIDAYS.length; i++) {\n            if (HOLIDAYS[i][0] == month && HOLIDAYS[i][1] == date) {\n                return true;\n            }\n        }\n        return false;\n    }\n}\n",
+          "after": null
+        },
+        {
+          "path": "rusty-payments/src/main/java/com/rustypayments/legacy/LegacyPaymentCalendar.java",
+          "action": "delete",
+          "before": "package com.rustypayments.legacy;\n\nimport com.rustypayments.PaymentCalendar;\n\nimport java.util.Calendar;\nimport java.util.Date;\n\n/**\n * PAYMENT CALENDAR\n * CREATED 03.05.2002\n * CHG 30.08.2008 - cut-off moved from 15:00 to 16:00\n * CHG 09.09.2009 - migrated from the green screens, logic unchanged\n */\npublic class LegacyPaymentCalendar implements PaymentCalendar {\n\n    private static final long DAY_MILLIS = 24L * 60 * 60 * 1000;\n\n    public boolean isBusinessDay(String date) {\n        Calendar c = Calendar.getInstance();\n        c.setTime(DateUtil.parseDay(date));\n        return isBusinessDay(c);\n    }\n\n    public String processingDate(String submittedAt) {\n        return DateUtil.formatDay(processing(submittedAt).getTime());\n    }\n\n    public String settlementDate(String submittedAt) {\n        Calendar processing = processing(submittedAt);\n        return DateUtil.formatDay(nextBusinessDay(processing).getTime());\n    }\n\n    public int daysLate(String dueDate, String paidAt) {\n        Date due = DateUtil.parseDay(dueDate);\n        Date paid = DateUtil.parseInstant(paidAt);\n        long late = (paid.getTime() - due.getTime()) / DAY_MILLIS;\n        return late < 0 ? 0 : (int) late;\n    }\n\n    public String addMonths(String date, int months) {\n        Calendar c = Calendar.getInstance();\n        c.setTime(DateUtil.parseDay(date));\n        c.add(Calendar.MONTH, months);\n        return DateUtil.formatDay(c.getTime());\n    }\n\n    private Calendar processing(String submittedAt) {\n        Calendar c = Calendar.getInstance();\n        c.setTime(DateUtil.parseInstant(submittedAt));\n        int hour = c.get(Calendar.HOUR_OF_DAY);\n        int minute = c.get(Calendar.MINUTE);\n        boolean inTime = hour < 16 || (hour == 16 && minute == 0);\n        if (isBusinessDay(c) && inTime) {\n            return c;\n        }\n        return nextBusinessDay(c);\n    }\n\n    private Calendar nextBusinessDay(Calendar from) {\n        Calendar c = (Calendar) from.clone();\n        do {\n            c.add(Calendar.DATE, 1);\n        } while (!isBusinessDay(c));\n        return c;\n    }\n\n    private boolean isBusinessDay(Calendar c) {\n        int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);\n        if (dayOfWeek == Calendar.SATURDAY || dayOfWeek == Calendar.SUNDAY) {\n            return false;\n        }\n        return !HolidayTable.isHoliday(c);\n    }\n}\n",
+          "after": null
+        }
+      ],
+      "rejectedEdits": {},
+      "verifySeconds": 2.59,
+      "result": {
+        "escaped": true,
+        "headline": "golden 13/13, escape 9/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 9,
+        "escapeTotal": 9,
+        "failures": []
+      }
+    }
+  ],
+  "escaped": true,
+  "attemptsUsed": 1,
+  "promptTokens": 9344,
+  "completionTokens": 1331,
+  "totalSeconds": 150.76
+}

@@ -6,9 +6,9 @@ Which models escape which rooms, how many attempts it takes, and what it costs. 
 
 | Model | Escaped | First try | Avg attempts when escaped | Avg tokens | Avg seconds |
 |---|---|---|---|---|---|
-| gemini-3-flash-preview | 4/4 (100%) | 4 | 1.0 | 11,886 | 83 |
-| gemma-4-31b-it | 9/9 (100%) +3 err | 6 | 1.33 | 15,210 | 333 |
-| gemma-4-26b-a4b-it | 8/9 (89%) +4 err | 7 | 1.12 | 19,965 | 379 |
+| gemini-3-flash-preview | 16/16 (100%) | 15 | 1.06 | 12,461 | 75 |
+| gemma-4-31b-it | 17/17 (100%) +7 err | 12 | 1.29 | 15,367 | 296 |
+| gemma-4-26b-a4b-it | 14/17 (82%) +8 err | 12 | 1.14 | 24,105 | 392 |
 | gemini-3.1-flash-lite | 9/12 (75%) | 1 | 2.22 | 34,701 | 48 |
 
 ## Room by room
@@ -17,9 +17,9 @@ Each cell is escapes/runs, with the average number of attempts of the escapes in
 
 | Model | 01-penny-room | 02-time-trap | 03-injection-vault | 04-god-class |
 |---|---|---|---|---|
-| gemini-3-flash-preview | 1/1 (1.0) | 1/1 (1.0) | 1/1 (1.0) | 1/1 (1.0) |
-| gemma-4-31b-it | 3/3 (1.0) | 3/3 (1.3) | 2/2 (2.0) +1 err | 1/1 (1.0) +2 err |
-| gemma-4-26b-a4b-it | 4/4 (1.0) | 3/3 (1.0) | 1/2 (2.0) +1 err | error |
+| gemini-3-flash-preview | 4/4 (1.2) | 4/4 (1.0) | 4/4 (1.0) | 4/4 (1.0) |
+| gemma-4-31b-it | 5/5 (1.0) +1 err | 5/5 (1.2) +1 err | 5/5 (1.6) +1 err | 2/2 (1.5) +4 err |
+| gemma-4-26b-a4b-it | 6/7 (1.0) | 5/6 (1.2) | 3/4 (1.3) +2 err | error |
 | gemini-3.1-flash-lite | 3/3 (2.7) | 3/3 (2.0) | 3/3 (2.0) | 0/3 |
 
 A run that stopped because a model call failed (rate limit, outage) is shown as `err` and is left out of the percentages.
