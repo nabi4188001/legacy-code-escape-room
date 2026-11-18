@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public final class OpenAiCompatibleModel implements ChatModel {
 
-    private static final int MAX_TRIES = 5;
+    private static final int MAX_TRIES = 8;
 
     private final String baseUrl;
     private final String model;
@@ -139,8 +139,8 @@ public final class OpenAiCompatibleModel implements ChatModel {
                         + shorten(response.body()));
             }
             long wait = response.headers().firstValue("retry-after")
-                    .map(OpenAiCompatibleModel::parseSeconds).orElse(15L * attempt);
-            pause(Math.min(wait, 90));
+                    .map(OpenAiCompatibleModel::parseSeconds).orElse(20L * attempt);
+            pause(Math.min(wait, 120));
         }
     }
 
