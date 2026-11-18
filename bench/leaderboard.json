@@ -7,6 +7,52 @@
   ],
   "models": [
     {
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "runs": 1,
+      "errors": 0,
+      "escapes": 1,
+      "escapeRate": 1.0,
+      "firstTryEscapes": 1,
+      "avgAttemptsWhenEscaped": 1.0,
+      "avgTokens": 15465,
+      "avgSeconds": 184,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 15465,
+          "avgSeconds": 184
+        }
+      }
+    },
+    {
+      "model": "recursive/flint-v1.0:free",
+      "runs": 1,
+      "errors": 0,
+      "escapes": 1,
+      "escapeRate": 1.0,
+      "firstTryEscapes": 1,
+      "avgAttemptsWhenEscaped": 1.0,
+      "avgTokens": 31354,
+      "avgSeconds": 258,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 31354,
+          "avgSeconds": 258
+        }
+      }
+    },
+    {
       "model": "gemini-3-flash-preview",
       "runs": 16,
       "errors": 0,
@@ -113,6 +159,29 @@
       }
     },
     {
+      "model": "cohere/north-mini-code:free",
+      "runs": 1,
+      "errors": 0,
+      "escapes": 1,
+      "escapeRate": 1.0,
+      "firstTryEscapes": 0,
+      "avgAttemptsWhenEscaped": 2.0,
+      "avgTokens": 44645,
+      "avgSeconds": 126,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 2.0,
+          "avgTokens": 44645,
+          "avgSeconds": 126
+        }
+      }
+    },
+    {
       "model": "gemma-4-26b-a4b-it",
       "runs": 17,
       "errors": 12,
@@ -215,6 +284,29 @@
           "avgAttemptsWhenEscaped": null,
           "avgTokens": 79035,
           "avgSeconds": 77
+        }
+      }
+    },
+    {
+      "model": "thinkingmachines/inkling-2-small:free",
+      "runs": 0,
+      "errors": 1,
+      "escapes": 0,
+      "escapeRate": null,
+      "firstTryEscapes": 0,
+      "avgAttemptsWhenEscaped": null,
+      "avgTokens": null,
+      "avgSeconds": null,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 0,
+          "errors": 1,
+          "escapes": 0,
+          "escapeRate": null,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": null,
+          "avgSeconds": null
         }
       }
     }

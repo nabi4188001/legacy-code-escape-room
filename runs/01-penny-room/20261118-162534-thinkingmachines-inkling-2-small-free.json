@@ -1,0 +1,78 @@
+{
+  "room": "01-penny-room",
+  "roomName": "The Penny Room",
+  "model": "thinkingmachines/inkling-2-small:free",
+  "startedAt": "2026-11-18T16:25:29.330133865Z",
+  "maxAttempts": 3,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 13/13, escape 0/9",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 13,
+    "goldenTotal": 13,
+    "escapePassed": 0,
+    "escapeTotal": 9,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "aCentIsNeverTooSmall",
+        "message": "expected: <10000000000000000.01> but was: <10000000000000000.00>"
+      },
+      {
+        "suite": "escape",
+        "test": "monthEndRunAddsUp",
+        "message": "expected: <1018.09> but was: <1018.04>"
+      },
+      {
+        "suite": "escape",
+        "test": "halfCentOfInterestRoundsUp",
+        "message": "expected: <0.28> but was: <0.27>"
+      },
+      {
+        "suite": "escape",
+        "test": "halfCentOfInterestRoundsUpAtAnotherRate",
+        "message": "expected: <1.23> but was: <1.22>"
+      },
+      {
+        "suite": "escape",
+        "test": "unevenSplitConservesMoney",
+        "message": "expected: <[33.34, 33.33, 33.33]> but was: <[33.33, 33.33, 33.33]>"
+      },
+      {
+        "suite": "escape",
+        "test": "tenDimesMakeADollar",
+        "message": "INSUFFICIENT FUNDS"
+      },
+      {
+        "suite": "escape",
+        "test": "leftoverCentsGoToTheFront",
+        "message": "expected: <[2.51, 2.51, 2.51, 2.50]> but was: <[2.50, 2.50, 2.50, 2.50]>"
+      },
+      {
+        "suite": "escape",
+        "test": "customerCanWithdrawWholeBalance",
+        "message": "INSUFFICIENT FUNDS"
+      },
+      {
+        "suite": "escape",
+        "test": "singlePayeeGetsEverything",
+        "message": "expected: <[64.07]> but was: <[64.06]>"
+      }
+    ]
+  },
+  "status": "error",
+  "error": "Model call failed with HTTP 403: {\"error\":{\"message\":\"thinkingmachines/inkling-2-small:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":403,\"metadata\":{\"routing_funnel\":[{\"step\":\"Initial Endpoints\",\"endpoint_count\":1}],\"failed_routing_step\":\"Gate Free Endpoints by Agentic Harness\"}}}",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 0.49,
+      "error": "Model call failed with HTTP 403: {\"error\":{\"message\":\"thinkingmachines/inkling-2-small:free is only available on agentic harnesses. Try plugging it into a coding agent or productivity app listed on https://openrouter.ai/apps\",\"code\":403,\"metadata\":{\"routing_funnel\":[{\"step\":\"Initial Endpoints\",\"endpoint_count\":1}],\"failed_routing_step\":\"Gate Free Endpoints by Agentic Harness\"}}}"
+    }
+  ],
+  "escaped": false,
+  "attemptsUsed": 1,
+  "promptTokens": 0,
+  "completionTokens": 0,
+  "totalSeconds": 4.76
+}

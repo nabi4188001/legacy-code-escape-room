@@ -1,0 +1,100 @@
+{
+  "room": "01-penny-room",
+  "roomName": "The Penny Room",
+  "model": "recursive/flint-v1.0:free",
+  "startedAt": "2026-11-18T16:24:28.446500749Z",
+  "maxAttempts": 3,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 13/13, escape 0/9",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 13,
+    "goldenTotal": 13,
+    "escapePassed": 0,
+    "escapeTotal": 9,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "aCentIsNeverTooSmall",
+        "message": "expected: <10000000000000000.01> but was: <10000000000000000.00>"
+      },
+      {
+        "suite": "escape",
+        "test": "monthEndRunAddsUp",
+        "message": "expected: <1018.09> but was: <1018.04>"
+      },
+      {
+        "suite": "escape",
+        "test": "halfCentOfInterestRoundsUp",
+        "message": "expected: <0.28> but was: <0.27>"
+      },
+      {
+        "suite": "escape",
+        "test": "halfCentOfInterestRoundsUpAtAnotherRate",
+        "message": "expected: <1.23> but was: <1.22>"
+      },
+      {
+        "suite": "escape",
+        "test": "unevenSplitConservesMoney",
+        "message": "expected: <[33.34, 33.33, 33.33]> but was: <[33.33, 33.33, 33.33]>"
+      },
+      {
+        "suite": "escape",
+        "test": "tenDimesMakeADollar",
+        "message": "INSUFFICIENT FUNDS"
+      },
+      {
+        "suite": "escape",
+        "test": "leftoverCentsGoToTheFront",
+        "message": "expected: <[2.51, 2.51, 2.51, 2.50]> but was: <[2.50, 2.50, 2.50, 2.50]>"
+      },
+      {
+        "suite": "escape",
+        "test": "customerCanWithdrawWholeBalance",
+        "message": "INSUFFICIENT FUNDS"
+      },
+      {
+        "suite": "escape",
+        "test": "singlePayeeGetsEverything",
+        "message": "expected: <[64.07]> but was: <[64.06]>"
+      }
+    ]
+  },
+  "status": "completed",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 250.04,
+      "promptTokens": 6094,
+      "completionTokens": 25260,
+      "plan": "The legacy teller stores balances and performs arithmetic with binary double, which loses cents and cannot represent very large amounts exactly. I will replace the terminal logic with BigDecimal-based cent arithmetic and half-up rounding.",
+      "edits": [
+        {
+          "path": "rusty-bank/src/main/java/com/rustybank/legacy/LegacyTellerTerminal.java",
+          "action": "rewrite",
+          "before": "package com.rustybank.legacy;\n\nimport com.rustybank.TellerTerminal;\n\nimport java.util.ArrayList;\nimport java.util.List;\n\n/**\n * TELLER TERMINAL PROGRAM\n * CREATED 12.03.1999\n * CHG 09.09.2009 - migrated from the green screens, logic unchanged\n */\npublic class LegacyTellerTerminal implements TellerTerminal {\n\n    private AccountStore store;\n    private InterestCalculator interestCalculator = new InterestCalculator();\n    private PaymentSplitter paymentSplitter = new PaymentSplitter();\n\n    public LegacyTellerTerminal(AccountStore store) {\n        this.store = store;\n    }\n\n    public void openAccount(String accountId) {\n        store.add(accountId);\n    }\n\n    public void deposit(String accountId, String amount) {\n        Account a = store.find(accountId);\n        double d = MoneyUtil.parse(amount);\n        a.setBalance(a.getBalance() + d);\n    }\n\n    public void withdraw(String accountId, String amount) {\n        Account a = store.find(accountId);\n        double d = MoneyUtil.parse(amount);\n        if (d > a.getBalance()) {\n            throw new IllegalStateException(\"INSUFFICIENT FUNDS\");\n        }\n        a.setBalance(a.getBalance() - d);\n    }\n\n    public String balance(String accountId) {\n        return MoneyUtil.format(store.find(accountId).getBalance());\n    }\n\n    public String postMonthlyInterest(String accountId, String annualRatePercent) {\n        Account a = store.find(accountId);\n        double rate = MoneyUtil.parse(annualRatePercent);\n        double interest = interestCalculator.monthlyInterest(a.getBalance(), rate);\n        a.setBalance(a.getBalance() + interest);\n        return MoneyUtil.format(interest);\n    }\n\n    public List<String> splitPayment(String fromAccountId, String amount, List<String> payeeIds) {\n        Account from = store.find(fromAccountId);\n        if (payeeIds == null || payeeIds.size() == 0) {\n            throw new IllegalArgumentException(\"NO PAYEES\");\n        }\n        List<Account> payees = new ArrayList<Account>();\n        for (int i = 0; i < payeeIds.size(); i++) {\n            payees.add(store.find(payeeIds.get(i)));\n        }\n        double total = MoneyUtil.parse(amount);\n        if (total > from.getBalance()) {\n            throw new IllegalStateException(\"INSUFFICIENT FUNDS\");\n        }\n        double share = paymentSplitter.shareOf(total, payees.size());\n        from.setBalance(from.getBalance() - total);\n        List<String> shares = new ArrayList<String>();\n        for (int i = 0; i < payees.size(); i++) {\n            Account p = payees.get(i);\n            p.setBalance(p.getBalance() + share);\n            shares.add(MoneyUtil.format(share));\n        }\n        return shares;\n    }\n\n    public String totalHoldings() {\n        double sum = 0;\n        List<Account> all = store.all();\n        for (int i = 0; i < all.size(); i++) {\n            sum = sum + all.get(i).getBalance();\n        }\n        return MoneyUtil.format(sum);\n    }\n}\n",
+          "after": "package com.rustybank.legacy;\n\nimport com.rustybank.TellerTerminal;\n\nimport java.math.BigDecimal;\nimport java.math.BigInteger;\nimport java.math.RoundingMode;\nimport java.util.ArrayList;\nimport java.util.HashMap;\nimport java.util.List;\nimport java.util.Map;\n\npublic class LegacyTellerTerminal implements TellerTerminal {\n\n    private final Map<String, BigDecimal> accounts = new HashMap<>();\n\n    public LegacyTellerTerminal(AccountStore store) {\n        // This terminal keeps its own exact-balance ledger.\n    }\n\n    @Override\n    public void openAccount(String accountId) {\n        if (accountId == null || accountId.trim().length() == 0) {\n            throw new IllegalArgumentException(\"INVALID ACCOUNT ID\");\n        }\n        if (accounts.containsKey(accountId)) {\n            throw new IllegalStateException(\"ACCOUNT EXISTS: \" + accountId);\n        }\n        accounts.put(accountId, BigDecimal.ZERO.setScale(2));\n    }\n\n    @Override\n    public void deposit(String accountId, String amount) {\n        BigDecimal balance = accounts.get(accountId);\n        if (balance == null) {\n            throw new IllegalArgumentException(\"UNKNOWN ACCOUNT: \" + accountId);\n        }\n        BigDecimal value = parseCents(amount);\n        accounts.put(accountId, balance.add(value));\n    }\n\n    @Override\n    public void withdraw(String accountId, String amount) {\n        BigDecimal balance = accounts.get(accountId);\n        if (balance == null) {\n            throw new IllegalArgumentException(\"UNKNOWN ACCOUNT: \" + accountId);\n        }\n        BigDecimal value = parseCents(amount);\n        if (value.compareTo(balance) > 0) {\n            throw new IllegalStateException(\"INSUFFICIENT FUNDS\");\n        }\n        accounts.put(accountId, balance.subtract(value));\n    }\n\n    @Override\n    public String balance(String accountId) {\n        BigDecimal balance = accounts.get(accountId);\n        if (balance == null) {\n            throw new IllegalArgumentException(\"UNKNOWN ACCOUNT: \" + accountId);\n        }\n        return format(balance);\n    }\n\n    @Override\n    public String postMonthlyInterest(String accountId, String annualRatePercent) {\n        BigDecimal balance = accounts.get(accountId);\n        if (balance == null) {\n            throw new IllegalArgumentException(\"UNKNOWN ACCOUNT: \" + accountId);\n        }\n        BigDecimal rate = parseRate(annualRatePercent);\n        BigDecimal interest = balance.multiply(rate)\n                .divide(BigDecimal.valueOf(1200), 2, RoundingMode.HALF_UP);\n        BigDecimal newBalance = balance.add(interest);\n        accounts.put(accountId, newBalance);\n        return format(interest);\n    }\n\n    @Override\n    public List<String> splitPayment(String fromAccountId, String amount, List<String> payeeIds) {\n        BigDecimal fromBalance = accounts.get(fromAccountId);\n        if (fromBalance == null) {\n            throw new IllegalArgumentException(\"UNKNOWN ACCOUNT: \" + fromAccountId);\n        }\n        if (payeeIds == null || payeeIds.size() == 0) {\n            throw new IllegalArgumentException(\"NO PAYEES\");\n        }\n\n        List<String> payees = new ArrayList<>(payeeIds);\n        for (String payeeId : payees) {\n            if (accounts.get(payeeId) == null) {\n                throw new IllegalArgumentException(\"UNKNOWN ACCOUNT: \" + payeeId);\n            }\n        }\n\n        BigDecimal total = parseCents(amount);\n        if (total.compareTo(fromBalance) > 0) {\n            throw new IllegalStateException(\"INSUFFICIENT FUNDS\");\n        }\n\n        BigInteger totalCents = total.movePointRight(2).toBigIntegerExact();\n        BigInteger payeesValue = BigInteger.valueOf(payees.size());\n        BigInteger baseCents = totalCents.divide(payeesValue);\n        BigInteger remainderCents = totalCents.mod(payeesValue);\n\n        List<String> shares = new ArrayList<>();\n        for (int i = 0; i < payees.size(); i++) {\n            BigInteger cents = baseCents;\n            if (BigInteger.valueOf(i).compareTo(remainderCents) < 0) {\n                cents = cents.add(BigInteger.ONE);\n            }\n            BigDecimal share = new BigDecimal(cents).movePointLeft(2);\n            shares.add(format(share));\n            accounts.put(payees.get(i), accounts.get(payees.get(i)).add(share));\n        }\n\n        accounts.put(fromAccountId, fromBalance.subtract(total));\n        return shares;\n    }\n\n    @Override\n    public String totalHoldings() {\n        BigDecimal sum = BigDecimal.ZERO.setScale(2);\n        for (BigDecimal balance : accounts.values()) {\n            sum = sum.add(balance);\n        }\n        return format(sum);\n    }\n\n    private static BigDecimal parseCents(String amount) {\n        if (amount == null) {\n            throw new IllegalArgumentException(\"INVALID AMOUNT\");\n        }\n        String cleaned = amount.trim();\n        if (cleaned.isEmpty()) {\n            throw new IllegalArgumentException(\"INVALID AMOUNT\");\n        }\n        BigDecimal value;\n        try {\n            value = new BigDecimal(cleaned);\n        } catch (NumberFormatException e) {\n            throw new IllegalArgumentException(\"INVALID AMOUNT: \" + amount);\n        }\n        if (value.signum() <= 0) {\n            throw new IllegalArgumentException(\"INVALID AMOUNT: \" + amount);\n        }\n        return value.setScale(2, RoundingMode.HALF_UP);\n    }\n\n    private static BigDecimal parseRate(String rate) {\n        if (rate == null) {\n            throw new IllegalArgumentException(\"INVALID RATE\");\n        }\n        String cleaned = rate.trim();\n        if (cleaned.isEmpty()) {\n            throw new IllegalArgumentException(\"INVALID RATE\");\n        }\n        BigDecimal value;\n        try {\n            value = new BigDecimal(cleaned);\n        } catch (NumberFormatException e) {\n            throw new IllegalArgumentException(\"INVALID RATE\");\n        }\n        if (value.signum() < 0) {\n            throw new IllegalArgumentException(\"INVALID RATE\");\n        }\n        return value;\n    }\n\n    private static String format(BigDecimal amount) {\n        if (amount == null) {\n            throw new IllegalArgumentException(\"INVALID AMOUNT\");\n        }\n        return amount.setScale(2, RoundingMode.HALF_UP).toPlainString();\n    }\n}\n"
+        }
+      ],
+      "rejectedEdits": {},
+      "verifySeconds": 3.75,
+      "result": {
+        "escaped": true,
+        "headline": "golden 13/13, escape 9/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 9,
+        "escapeTotal": 9,
+        "failures": []
+      }
+    }
+  ],
+  "escaped": true,
+  "attemptsUsed": 1,
+  "promptTokens": 6094,
+  "completionTokens": 25260,
+  "totalSeconds": 257.68
+}
