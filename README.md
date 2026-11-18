@@ -77,15 +77,36 @@ java -jar escape-agent/target/escape-agent.jar --room 01-penny-room
 the repository's Actions tab with the **escape attempt** workflow, once `LLM_API_KEY`
 is saved as a repository secret.
 
+## RustyBench
+
+Which models can get out, and what does it cost them? The **bench** workflow sends every model in
+`bench/models.json` through every room several times and rebuilds
+[`bench/LEADERBOARD.md`](bench/LEADERBOARD.md) from the logs in `runs/`.
+
+- One run is one model in one room with up to five attempts. A room is escaped only when the real
+  Maven build says so: locks intact, golden tests green, escape tests green.
+- The leaderboard shows escapes per run, attempts needed, tokens and seconds. A run that ends
+  because the provider failed (rate limit, outage) is counted as an error and left out of the
+  percentages, because it says nothing about the model.
+- Everything runs on free tiers: Gemini and Gemma through Google's OpenAI-compatible endpoint.
+  Gemma rejects system prompts, so the agent folds them into the first user message
+  (`system_as_user` in the catalogue).
+- Add a model by adding an entry to `bench/models.json` and a repository secret with its key.
+
+Early findings: the strongest free model escapes all four rooms on the first try, the smaller
+Gemma models almost always do too, and Gemini 3.1 Flash-Lite needs about two attempts and never
+escaped the God Class. See the leaderboard for current numbers.
+
 ## Roadmap
 
 - [x] Rusty Bank and Room 1 with locked tests
 - [x] The agent loop: look, ask, apply, judge, retry, with a full run log
-- [ ] First recorded escapes of Room 1 by real models
+- [x] Recorded escapes by real models
 - [x] Room 2: the Time Trap
 - [x] Rooms 3 and 4: the Injection Vault and the God Class
 - [ ] Replay viewer: watch any escape attempt in the browser
-- [ ] Boss room and **RustyBench**: a leaderboard of which models escape which rooms, and at what cost
+- [x] **RustyBench**: a leaderboard of which models escape which rooms, and at what cost
+- [ ] Boss room
 
 ## A note on the code
 
