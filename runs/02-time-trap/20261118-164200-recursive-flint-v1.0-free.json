@@ -1,0 +1,340 @@
+{
+  "room": "02-time-trap",
+  "roomName": "The Time Trap",
+  "model": "recursive/flint-v1.0:free",
+  "startedAt": "2026-11-18T16:37:51.939357249Z",
+  "maxAttempts": 4,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 13/13, escape 0/9",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 13,
+    "goldenTotal": 13,
+    "escapePassed": 0,
+    "escapeTotal": 9,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "daysLateDoesNotDependOnTheServerZone",
+        "message": "UTC ==> expected: <1> but was: <0>"
+      },
+      {
+        "suite": "escape",
+        "test": "epiphanyIsABankHoliday",
+        "message": "expected: <false> but was: <true>"
+      },
+      {
+        "suite": "escape",
+        "test": "impossibleDatesAreRefused",
+        "message": "2026-02-30 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "settlementAtTheEndOfTheYear",
+        "message": "expected: <2026-12-28> but was: <2027-12-28>"
+      },
+      {
+        "suite": "escape",
+        "test": "cutOffDoesNotDependOnTheServerZone",
+        "message": "Europe/Warsaw ==> expected: <2026-07-02> but was: <2026-07-01>"
+      },
+      {
+        "suite": "escape",
+        "test": "cutOffIsToTheSecond",
+        "message": "expected: <2026-03-26> but was: <2026-03-25>"
+      },
+      {
+        "suite": "escape",
+        "test": "monthEndStaysMonthEnd",
+        "message": "expected: <2026-03-31> but was: <2026-03-28>"
+      },
+      {
+        "suite": "escape",
+        "test": "daysLateThroughTheClockChange",
+        "message": "expected: <3> but was: <2>"
+      },
+      {
+        "suite": "escape",
+        "test": "manyThreadsAtOnce",
+        "message": "expected: <[]> but was: <[settlement(2026-03-27T10:00:00+01:00) threw java.lang.NumberFormatException: For input string: \"E31\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"E3\"]>"
+      }
+    ]
+  },
+  "status": "completed",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 35.45,
+      "promptTokens": 7535,
+      "completionTokens": 4114,
+      "plan": "<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && ls -R src | head -50 && cat pom.xml | head -60 && cat ../rusty-payments/LOCKED.sha256 2>/dev/null; ls ..</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && cat src/main/java/com/rustypayments/PaymentCalendar.java | tail -20 && git status --short | head</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "daysLateDoesNotDependOnTheServerZone",
+            "message": "UTC ==> expected: <1> but was: <0>"
+          },
+          {
+            "suite": "escape",
+            "test": "epiphanyIsABankHoliday",
+            "message": "expected: <false> but was: <true>"
+          },
+          {
+            "suite": "escape",
+            "test": "impossibleDatesAreRefused",
+            "message": "2026-02-30 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "settlementAtTheEndOfTheYear",
+            "message": "expected: <2026-12-28> but was: <2027-12-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffDoesNotDependOnTheServerZone",
+            "message": "Europe/Warsaw ==> expected: <2026-07-02> but was: <2026-07-01>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffIsToTheSecond",
+            "message": "expected: <2026-03-26> but was: <2026-03-25>"
+          },
+          {
+            "suite": "escape",
+            "test": "monthEndStaysMonthEnd",
+            "message": "expected: <2026-03-31> but was: <2026-03-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "daysLateThroughTheClockChange",
+            "message": "expected: <3> but was: <2>"
+          },
+          {
+            "suite": "escape",
+            "test": "manyThreadsAtOnce",
+            "message": "expected: <[]> but was: <[settlement(2026-03-27T10:00:00+01:00) threw java.lang.NumberFormatException: For input string: \"E31\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"E3\"]>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 2,
+      "modelSeconds": 118.14,
+      "promptTokens": 7640,
+      "completionTokens": 9008,
+      "plan": "<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && cat LOCKED.sha256; ls scripts; cat scripts/verify-locks.sh; find src -name \"*.java\" | xargs ls -la</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && sed -n '1,80p' pom.xml && java -version 2>&1 && mvn -v 2>&1 | head -3</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "daysLateDoesNotDependOnTheServerZone",
+            "message": "UTC ==> expected: <1> but was: <0>"
+          },
+          {
+            "suite": "escape",
+            "test": "epiphanyIsABankHoliday",
+            "message": "expected: <false> but was: <true>"
+          },
+          {
+            "suite": "escape",
+            "test": "impossibleDatesAreRefused",
+            "message": "2026-02-30 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "settlementAtTheEndOfTheYear",
+            "message": "expected: <2026-12-28> but was: <2027-12-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffDoesNotDependOnTheServerZone",
+            "message": "Europe/Warsaw ==> expected: <2026-07-02> but was: <2026-07-01>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffIsToTheSecond",
+            "message": "expected: <2026-03-26> but was: <2026-03-25>"
+          },
+          {
+            "suite": "escape",
+            "test": "monthEndStaysMonthEnd",
+            "message": "expected: <2026-03-31> but was: <2026-03-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "daysLateThroughTheClockChange",
+            "message": "expected: <3> but was: <2>"
+          },
+          {
+            "suite": "escape",
+            "test": "manyThreadsAtOnce",
+            "message": "expected: <[]> but was: <[settlement(2026-03-27T10:00:00+01:00) threw java.lang.NumberFormatException: For input string: \"E31\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"E3\"]>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 3,
+      "modelSeconds": 40.34,
+      "promptTokens": 7730,
+      "completionTokens": 5422,
+      "plan": "<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && mvn -q test -Dgroups=golden 2>&1 | tail -30</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && cat pom.xml</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "daysLateDoesNotDependOnTheServerZone",
+            "message": "UTC ==> expected: <1> but was: <0>"
+          },
+          {
+            "suite": "escape",
+            "test": "epiphanyIsABankHoliday",
+            "message": "expected: <false> but was: <true>"
+          },
+          {
+            "suite": "escape",
+            "test": "impossibleDatesAreRefused",
+            "message": "2026-02-30 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "settlementAtTheEndOfTheYear",
+            "message": "expected: <2026-12-28> but was: <2027-12-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffDoesNotDependOnTheServerZone",
+            "message": "Europe/Warsaw ==> expected: <2026-07-02> but was: <2026-07-01>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffIsToTheSecond",
+            "message": "expected: <2026-03-26> but was: <2026-03-25>"
+          },
+          {
+            "suite": "escape",
+            "test": "monthEndStaysMonthEnd",
+            "message": "expected: <2026-03-31> but was: <2026-03-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "daysLateThroughTheClockChange",
+            "message": "expected: <3> but was: <2>"
+          },
+          {
+            "suite": "escape",
+            "test": "manyThreadsAtOnce",
+            "message": "expected: <[]> but was: <[settlement(2026-03-27T10:00:00+01:00) threw java.lang.NumberFormatException: For input string: \"E31\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"E3\"]>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 4,
+      "modelSeconds": 51.49,
+      "promptTokens": 7780,
+      "completionTokens": 6665,
+      "plan": "<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && grep -n \"2026-01-0\" -r src/test src/main | head -20 && echo ---- && sed -n '1,60p' src/test/java/com/rustypayments/rooms/time/TimeTrapEscapeTest.java | sed -n '60,140p'</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && cat LOCKED.sha256 && echo ---- && cat scripts/verify-locks.sh && echo ---- && ls src/main/java/com/rustypayments src/main/java/com/rustypayments/legacy</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-payments && grep -n \"settlement\\|processing\\|addMonths\\|daysLate\\|isBusinessDay\" src/test/java/com/rustypayments/rooms/time/TimeTrapEscapeTest.java</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "daysLateDoesNotDependOnTheServerZone",
+            "message": "UTC ==> expected: <1> but was: <0>"
+          },
+          {
+            "suite": "escape",
+            "test": "epiphanyIsABankHoliday",
+            "message": "expected: <false> but was: <true>"
+          },
+          {
+            "suite": "escape",
+            "test": "impossibleDatesAreRefused",
+            "message": "2026-02-30 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "settlementAtTheEndOfTheYear",
+            "message": "expected: <2026-12-28> but was: <2027-12-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffDoesNotDependOnTheServerZone",
+            "message": "Europe/Warsaw ==> expected: <2026-07-02> but was: <2026-07-01>"
+          },
+          {
+            "suite": "escape",
+            "test": "cutOffIsToTheSecond",
+            "message": "expected: <2026-03-26> but was: <2026-03-25>"
+          },
+          {
+            "suite": "escape",
+            "test": "monthEndStaysMonthEnd",
+            "message": "expected: <2026-03-31> but was: <2026-03-28>"
+          },
+          {
+            "suite": "escape",
+            "test": "daysLateThroughTheClockChange",
+            "message": "expected: <3> but was: <2>"
+          },
+          {
+            "suite": "escape",
+            "test": "manyThreadsAtOnce",
+            "message": "expected: <[]> but was: <[settlement(2026-03-27T10:00:00+01:00) threw java.lang.NumberFormatException: For input string: \"E31\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"\", processing(2026-03-25T10:15:00+01:00) threw java.lang.NumberFormatException: For input string: \"E3\"]>"
+          }
+        ]
+      }
+    }
+  ],
+  "escaped": false,
+  "attemptsUsed": 4,
+  "promptTokens": 30685,
+  "completionTokens": 25209,
+  "totalSeconds": 248.32
+}

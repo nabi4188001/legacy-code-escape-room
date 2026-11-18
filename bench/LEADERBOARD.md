@@ -6,13 +6,14 @@ Which models escape which rooms, how many attempts it takes, and what it costs. 
 
 | Model | Escaped | First try | Avg attempts when escaped | Avg tokens | Avg seconds |
 |---|---|---|---|---|---|
-| nvidia/nemotron-3-ultra-550b-a55b:free | 1/1 (100%) | 1 | 1.0 | 15,465 | 184 |
-| recursive/flint-v1.0:free | 1/1 (100%) | 1 | 1.0 | 31,354 | 258 |
 | gemini-3-flash-preview | 16/16 (100%) | 15 | 1.06 | 12,461 | 75 |
 | gemma-4-31b-it | 19/19 (100%) +9 err | 13 | 1.32 | 16,671 | 345 |
-| cohere/north-mini-code:free | 1/1 (100%) | 0 | 2.0 | 44,645 | 126 |
 | gemma-4-26b-a4b-it | 14/17 (82%) +12 err | 12 | 1.14 | 24,105 | 392 |
+| nvidia/nemotron-3-ultra-550b-a55b:free | 3/4 (75%) | 2 | 1.33 | 31,556 | 149 |
 | gemini-3.1-flash-lite | 9/12 (75%) | 1 | 2.22 | 34,701 | 48 |
+| cohere/north-mini-code:free | 2/3 (67%) +1 err | 0 | 2.0 | 90,567 | 292 |
+| recursive/flint-v1.0:free | 2/4 (50%) | 1 | 2.0 | 76,124 | 508 |
+| nvidia/nemotron-3.5-lightning:free | 1/3 (33%) | 0 | 2.0 | 155,955 | 866 |
 | thinkingmachines/inkling-2-small:free | - +1 err | 0 | - | - | - |
 
 ## Room by room
@@ -21,13 +22,14 @@ Each cell is escapes/runs, with the average number of attempts of the escapes in
 
 | Model | 01-penny-room | 02-time-trap | 03-injection-vault | 04-god-class |
 |---|---|---|---|---|
-| nvidia/nemotron-3-ultra-550b-a55b:free | 1/1 (1.0) | - | - | - |
-| recursive/flint-v1.0:free | 1/1 (1.0) | - | - | - |
 | gemini-3-flash-preview | 4/4 (1.2) | 4/4 (1.0) | 4/4 (1.0) | 4/4 (1.0) |
 | gemma-4-31b-it | 5/5 (1.0) +1 err | 5/5 (1.2) +1 err | 5/5 (1.6) +1 err | 4/4 (1.5) +6 err |
-| cohere/north-mini-code:free | 1/1 (2.0) | - | - | - |
 | gemma-4-26b-a4b-it | 6/7 (1.0) | 5/6 (1.2) | 3/4 (1.3) +2 err | error |
+| nvidia/nemotron-3-ultra-550b-a55b:free | 1/1 (1.0) | 1/1 (1.0) | 1/1 (2.0) | 0/1 |
 | gemini-3.1-flash-lite | 3/3 (2.7) | 3/3 (2.0) | 3/3 (2.0) | 0/3 |
+| cohere/north-mini-code:free | 1/1 (2.0) | error | 1/1 (2.0) | 0/1 |
+| recursive/flint-v1.0:free | 1/1 (1.0) | 0/1 | 0/1 | 1/1 (3.0) |
+| nvidia/nemotron-3.5-lightning:free | - | 0/1 | 1/1 (2.0) | 0/1 |
 | thinkingmachines/inkling-2-small:free | error | - | - | - |
 
 A run that stopped because a model call failed (rate limit, outage) is shown as `err` and is left out of the percentages.

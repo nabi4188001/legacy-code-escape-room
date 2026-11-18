@@ -1,0 +1,340 @@
+{
+  "room": "03-injection-vault",
+  "roomName": "The Injection Vault",
+  "model": "recursive/flint-v1.0:free",
+  "startedAt": "2026-11-18T16:42:05.790969105Z",
+  "maxAttempts": 4,
+  "baseline": {
+    "escaped": false,
+    "headline": "golden 13/13, escape 0/9",
+    "locksIntact": true,
+    "compiled": true,
+    "goldenPassed": 13,
+    "goldenTotal": 13,
+    "escapePassed": 0,
+    "escapeTotal": 9,
+    "failures": [
+      {
+        "suite": "escape",
+        "test": "idListsAreChecked",
+        "message": "Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "deleteWorksWithApostrophes",
+        "message": "SQL ERROR: Syntax error in SQL statement \"DELETE FROM customer WHERE city = 'Cote d'Azur[*]'\"; SQL statement:\nDELETE FROM customer WHERE city = 'Cote d'Azur' [42000-232]"
+      },
+      {
+        "suite": "escape",
+        "test": "sortKeyIsAllowListed",
+        "message": "name, id DESC ==> Unexpected exception type thrown, expected: <java.lang.IllegalArgumentException> but was: <java.lang.IllegalStateException>"
+      },
+      {
+        "suite": "escape",
+        "test": "idsAreDigitsOnly",
+        "message": "getById 1 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "prefixCannotBeInjected",
+        "message": "SQL ERROR: Syntax error in SQL statement \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%[*]') ORDER BY id\"; SQL statement:\nSELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%') ORDER BY id [42000-232]"
+      },
+      {
+        "suite": "escape",
+        "test": "amountsAreDigitsOnly",
+        "message": "0 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+      },
+      {
+        "suite": "escape",
+        "test": "wildcardsAreLiteral",
+        "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000, 6|100% Real|Gdansk|1, 7|a_b|Gdansk|1, 8|axb|Gdansk|1]>"
+      },
+      {
+        "suite": "escape",
+        "test": "storedValuesAreNotTrusted",
+        "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000]>"
+      },
+      {
+        "suite": "escape",
+        "test": "deleteCannotWipeTheTable",
+        "message": "expected: <0> but was: <5>"
+      }
+    ]
+  },
+  "status": "completed",
+  "attempts": [
+    {
+      "number": 1,
+      "modelSeconds": 47.8,
+      "promptTokens": 6981,
+      "completionTokens": 3501,
+      "plan": "<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && ls -R src | head -50 && cat pom.xml && cat ../rusty-vault/src/main/java/com/rustyvault/RustyVault.java 2>/dev/null; cat LOCKED.sha256 2>/dev/null; ls</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && find . -name \"*.java\" -not -path \"./target/*\" && cat scripts/verify-locks.sh 2>/dev/null</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "idListsAreChecked",
+            "message": "Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "deleteWorksWithApostrophes",
+            "message": "SQL ERROR: Syntax error in SQL statement \"DELETE FROM customer WHERE city = 'Cote d'Azur[*]'\"; SQL statement:\nDELETE FROM customer WHERE city = 'Cote d'Azur' [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "sortKeyIsAllowListed",
+            "message": "name, id DESC ==> Unexpected exception type thrown, expected: <java.lang.IllegalArgumentException> but was: <java.lang.IllegalStateException>"
+          },
+          {
+            "suite": "escape",
+            "test": "idsAreDigitsOnly",
+            "message": "getById 1 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "prefixCannotBeInjected",
+            "message": "SQL ERROR: Syntax error in SQL statement \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%[*]') ORDER BY id\"; SQL statement:\nSELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%') ORDER BY id [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "amountsAreDigitsOnly",
+            "message": "0 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "wildcardsAreLiteral",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000, 6|100% Real|Gdansk|1, 7|a_b|Gdansk|1, 8|axb|Gdansk|1]>"
+          },
+          {
+            "suite": "escape",
+            "test": "storedValuesAreNotTrusted",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000]>"
+          },
+          {
+            "suite": "escape",
+            "test": "deleteCannotWipeTheTable",
+            "message": "expected: <0> but was: <5>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 2,
+      "modelSeconds": 74.76,
+      "promptTokens": 7103,
+      "completionTokens": 8304,
+      "plan": "<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && cat pom.xml && ls -la && cat LOCKED.sha256 2>/dev/null; cat ../rusty-vault/LOCKED.sha256 2>/dev/null; find / -name \"LOCKED.sha256\" -maxdepth 4 2>/dev/null</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && timeout 900 mvn -q test -Dgroups=golden 2>&1 | tail -30</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "idListsAreChecked",
+            "message": "Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "deleteWorksWithApostrophes",
+            "message": "SQL ERROR: Syntax error in SQL statement \"DELETE FROM customer WHERE city = 'Cote d'Azur[*]'\"; SQL statement:\nDELETE FROM customer WHERE city = 'Cote d'Azur' [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "sortKeyIsAllowListed",
+            "message": "name, id DESC ==> Unexpected exception type thrown, expected: <java.lang.IllegalArgumentException> but was: <java.lang.IllegalStateException>"
+          },
+          {
+            "suite": "escape",
+            "test": "idsAreDigitsOnly",
+            "message": "getById 1 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "prefixCannotBeInjected",
+            "message": "SQL ERROR: Syntax error in SQL statement \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%[*]') ORDER BY id\"; SQL statement:\nSELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%') ORDER BY id [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "amountsAreDigitsOnly",
+            "message": "0 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "wildcardsAreLiteral",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000, 6|100% Real|Gdansk|1, 7|a_b|Gdansk|1, 8|axb|Gdansk|1]>"
+          },
+          {
+            "suite": "escape",
+            "test": "storedValuesAreNotTrusted",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000]>"
+          },
+          {
+            "suite": "escape",
+            "test": "deleteCannotWipeTheTable",
+            "message": "expected: <0> but was: <5>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 3,
+      "modelSeconds": 69.1,
+      "promptTokens": 7208,
+      "completionTokens": 7890,
+      "plan": "<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && for f in src/main/java/com/rustyvault/RustyVault.java src/main/java/com/rustyvault/legacy/Db.java src/main/java/com/rustyvault/legacy/LegacyCustomerDirectory.java pom.xml; do echo \"=== $f ===\"; cat \"$f\"; done</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && ls -la src/main/java/com/rustyvault src/main/java/com/rustyvault/legacy src/test/java/com/rustyvault/rooms/vault 2>/dev/null; cat src/main/java/com/rustyvault/CustomerDirectory.java | head -20; ls -la; git status 2>/dev/null | head</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "idListsAreChecked",
+            "message": "Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "deleteWorksWithApostrophes",
+            "message": "SQL ERROR: Syntax error in SQL statement \"DELETE FROM customer WHERE city = 'Cote d'Azur[*]'\"; SQL statement:\nDELETE FROM customer WHERE city = 'Cote d'Azur' [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "sortKeyIsAllowListed",
+            "message": "name, id DESC ==> Unexpected exception type thrown, expected: <java.lang.IllegalArgumentException> but was: <java.lang.IllegalStateException>"
+          },
+          {
+            "suite": "escape",
+            "test": "idsAreDigitsOnly",
+            "message": "getById 1 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "prefixCannotBeInjected",
+            "message": "SQL ERROR: Syntax error in SQL statement \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%[*]') ORDER BY id\"; SQL statement:\nSELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%') ORDER BY id [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "amountsAreDigitsOnly",
+            "message": "0 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "wildcardsAreLiteral",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000, 6|100% Real|Gdansk|1, 7|a_b|Gdansk|1, 8|axb|Gdansk|1]>"
+          },
+          {
+            "suite": "escape",
+            "test": "storedValuesAreNotTrusted",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000]>"
+          },
+          {
+            "suite": "escape",
+            "test": "deleteCannotWipeTheTable",
+            "message": "expected: <0> but was: <5>"
+          }
+        ]
+      }
+    },
+    {
+      "number": 4,
+      "modelSeconds": 151.75,
+      "promptTokens": 7361,
+      "completionTokens": 11964,
+      "plan": "Let me inspect the current state before writing the fix.<tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && cat pom.xml && echo \"-----\" && cat src/main/java/com/rustyvault/CustomerDirectory.java | tail -40 && echo \"-----\" && cat src/main/java/com/rustyvault/legacy/LegacyCustomerDirectory.java | head -30</arg_value></tool_call><tool_call>bash<arg_key>command</arg_key><arg_value>cd rusty-vault && timeout 1200 mvn -q test 2>&1 | tail -40</arg_value></tool_call>",
+      "edits": [],
+      "rejectedEdits": {},
+      "note": "The reply contained no usable edits, so nothing was run.",
+      "result": {
+        "escaped": false,
+        "headline": "golden 13/13, escape 0/9",
+        "locksIntact": true,
+        "compiled": true,
+        "goldenPassed": 13,
+        "goldenTotal": 13,
+        "escapePassed": 0,
+        "escapeTotal": 9,
+        "failures": [
+          {
+            "suite": "escape",
+            "test": "idListsAreChecked",
+            "message": "Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "deleteWorksWithApostrophes",
+            "message": "SQL ERROR: Syntax error in SQL statement \"DELETE FROM customer WHERE city = 'Cote d'Azur[*]'\"; SQL statement:\nDELETE FROM customer WHERE city = 'Cote d'Azur' [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "sortKeyIsAllowListed",
+            "message": "name, id DESC ==> Unexpected exception type thrown, expected: <java.lang.IllegalArgumentException> but was: <java.lang.IllegalStateException>"
+          },
+          {
+            "suite": "escape",
+            "test": "idsAreDigitsOnly",
+            "message": "getById 1 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "prefixCannotBeInjected",
+            "message": "SQL ERROR: Syntax error in SQL statement \"SELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%[*]') ORDER BY id\"; SQL statement:\nSELECT id, name, city, balance_cents FROM customer WHERE UPPER(name) LIKE UPPER('O'H%') ORDER BY id [42000-232]"
+          },
+          {
+            "suite": "escape",
+            "test": "amountsAreDigitsOnly",
+            "message": "0 OR 1=1 ==> Expected java.lang.IllegalArgumentException to be thrown, but nothing was thrown."
+          },
+          {
+            "suite": "escape",
+            "test": "wildcardsAreLiteral",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000, 6|100% Real|Gdansk|1, 7|a_b|Gdansk|1, 8|axb|Gdansk|1]>"
+          },
+          {
+            "suite": "escape",
+            "test": "storedValuesAreNotTrusted",
+            "message": "expected: <[]> but was: <[1|Anna|Gdansk|150000, 2|Bob|Krakow|20000, 3|Carl|Gdansk|90000, 4|Dora|Warsaw|20000, 5|O'Hara|Cork|5000]>"
+          },
+          {
+            "suite": "escape",
+            "test": "deleteCannotWipeTheTable",
+            "message": "expected: <0> but was: <5>"
+          }
+        ]
+      }
+    }
+  ],
+  "escaped": false,
+  "attemptsUsed": 4,
+  "promptTokens": 28653,
+  "completionTokens": 31659,
+  "totalSeconds": 346.35
+}

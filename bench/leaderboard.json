@@ -7,52 +7,6 @@
   ],
   "models": [
     {
-      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
-      "runs": 1,
-      "errors": 0,
-      "escapes": 1,
-      "escapeRate": 1.0,
-      "firstTryEscapes": 1,
-      "avgAttemptsWhenEscaped": 1.0,
-      "avgTokens": 15465,
-      "avgSeconds": 184,
-      "rooms": {
-        "01-penny-room": {
-          "runs": 1,
-          "errors": 0,
-          "escapes": 1,
-          "escapeRate": 1.0,
-          "firstTryEscapes": 1,
-          "avgAttemptsWhenEscaped": 1.0,
-          "avgTokens": 15465,
-          "avgSeconds": 184
-        }
-      }
-    },
-    {
-      "model": "recursive/flint-v1.0:free",
-      "runs": 1,
-      "errors": 0,
-      "escapes": 1,
-      "escapeRate": 1.0,
-      "firstTryEscapes": 1,
-      "avgAttemptsWhenEscaped": 1.0,
-      "avgTokens": 31354,
-      "avgSeconds": 258,
-      "rooms": {
-        "01-penny-room": {
-          "runs": 1,
-          "errors": 0,
-          "escapes": 1,
-          "escapeRate": 1.0,
-          "firstTryEscapes": 1,
-          "avgAttemptsWhenEscaped": 1.0,
-          "avgTokens": 31354,
-          "avgSeconds": 258
-        }
-      }
-    },
-    {
       "model": "gemini-3-flash-preview",
       "runs": 16,
       "errors": 0,
@@ -159,29 +113,6 @@
       }
     },
     {
-      "model": "cohere/north-mini-code:free",
-      "runs": 1,
-      "errors": 0,
-      "escapes": 1,
-      "escapeRate": 1.0,
-      "firstTryEscapes": 0,
-      "avgAttemptsWhenEscaped": 2.0,
-      "avgTokens": 44645,
-      "avgSeconds": 126,
-      "rooms": {
-        "01-penny-room": {
-          "runs": 1,
-          "errors": 0,
-          "escapes": 1,
-          "escapeRate": 1.0,
-          "firstTryEscapes": 0,
-          "avgAttemptsWhenEscaped": 2.0,
-          "avgTokens": 44645,
-          "avgSeconds": 126
-        }
-      }
-    },
-    {
       "model": "gemma-4-26b-a4b-it",
       "runs": 17,
       "errors": 12,
@@ -235,6 +166,59 @@
       }
     },
     {
+      "model": "nvidia/nemotron-3-ultra-550b-a55b:free",
+      "runs": 4,
+      "errors": 0,
+      "escapes": 3,
+      "escapeRate": 0.75,
+      "firstTryEscapes": 2,
+      "avgAttemptsWhenEscaped": 1.33,
+      "avgTokens": 31556,
+      "avgSeconds": 149,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 15465,
+          "avgSeconds": 184
+        },
+        "02-time-trap": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 10962,
+          "avgSeconds": 39
+        },
+        "03-injection-vault": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 2.0,
+          "avgTokens": 18831,
+          "avgSeconds": 86
+        },
+        "04-god-class": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 0,
+          "escapeRate": 0.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": 80967,
+          "avgSeconds": 288
+        }
+      }
+    },
+    {
       "model": "gemini-3.1-flash-lite",
       "runs": 12,
       "errors": 0,
@@ -284,6 +268,155 @@
           "avgAttemptsWhenEscaped": null,
           "avgTokens": 79035,
           "avgSeconds": 77
+        }
+      }
+    },
+    {
+      "model": "cohere/north-mini-code:free",
+      "runs": 3,
+      "errors": 1,
+      "escapes": 2,
+      "escapeRate": 0.667,
+      "firstTryEscapes": 0,
+      "avgAttemptsWhenEscaped": 2.0,
+      "avgTokens": 90567,
+      "avgSeconds": 292,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 2.0,
+          "avgTokens": 44645,
+          "avgSeconds": 126
+        },
+        "02-time-trap": {
+          "runs": 0,
+          "errors": 1,
+          "escapes": 0,
+          "escapeRate": null,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": null,
+          "avgSeconds": null
+        },
+        "03-injection-vault": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 2.0,
+          "avgTokens": 58763,
+          "avgSeconds": 235
+        },
+        "04-god-class": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 0,
+          "escapeRate": 0.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": 168292,
+          "avgSeconds": 513
+        }
+      }
+    },
+    {
+      "model": "recursive/flint-v1.0:free",
+      "runs": 4,
+      "errors": 0,
+      "escapes": 2,
+      "escapeRate": 0.5,
+      "firstTryEscapes": 1,
+      "avgAttemptsWhenEscaped": 2.0,
+      "avgTokens": 76124,
+      "avgSeconds": 508,
+      "rooms": {
+        "01-penny-room": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 1,
+          "avgAttemptsWhenEscaped": 1.0,
+          "avgTokens": 31354,
+          "avgSeconds": 258
+        },
+        "02-time-trap": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 0,
+          "escapeRate": 0.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": 55894,
+          "avgSeconds": 248
+        },
+        "03-injection-vault": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 0,
+          "escapeRate": 0.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": 60312,
+          "avgSeconds": 346
+        },
+        "04-god-class": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 3.0,
+          "avgTokens": 156935,
+          "avgSeconds": 1178
+        }
+      }
+    },
+    {
+      "model": "nvidia/nemotron-3.5-lightning:free",
+      "runs": 3,
+      "errors": 0,
+      "escapes": 1,
+      "escapeRate": 0.333,
+      "firstTryEscapes": 0,
+      "avgAttemptsWhenEscaped": 2.0,
+      "avgTokens": 155955,
+      "avgSeconds": 866,
+      "rooms": {
+        "02-time-trap": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 0,
+          "escapeRate": 0.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": 95248,
+          "avgSeconds": 552
+        },
+        "03-injection-vault": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 1,
+          "escapeRate": 1.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": 2.0,
+          "avgTokens": 98767,
+          "avgSeconds": 608
+        },
+        "04-god-class": {
+          "runs": 1,
+          "errors": 0,
+          "escapes": 0,
+          "escapeRate": 0.0,
+          "firstTryEscapes": 0,
+          "avgAttemptsWhenEscaped": null,
+          "avgTokens": 273849,
+          "avgSeconds": 1439
         }
       }
     },
