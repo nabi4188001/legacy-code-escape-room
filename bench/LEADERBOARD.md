@@ -14,7 +14,6 @@ Which models escape which rooms, how many attempts it takes, and what it costs. 
 | cohere/north-mini-code:free | 2/3 (67%) +1 err | 0 | 2.0 | 90,567 | 292 |
 | recursive/flint-v1.0:free | 2/4 (50%) | 1 | 2.0 | 76,124 | 508 |
 | nvidia/nemotron-3.5-lightning:free | 1/3 (33%) | 0 | 2.0 | 155,955 | 866 |
-| thinkingmachines/inkling-2-small:free | - +1 err | 0 | - | - | - |
 
 ## Room by room
 
@@ -30,6 +29,5 @@ Each cell is escapes/runs, with the average number of attempts of the escapes in
 | cohere/north-mini-code:free | 1/1 (2.0) | error | 1/1 (2.0) | 0/1 |
 | recursive/flint-v1.0:free | 1/1 (1.0) | 0/1 | 0/1 | 1/1 (3.0) |
 | nvidia/nemotron-3.5-lightning:free | - | 0/1 | 1/1 (2.0) | 0/1 |
-| thinkingmachines/inkling-2-small:free | error | - | - | - |
 
 A run that stopped because a model call failed (rate limit, outage) is shown as `err` and is left out of the percentages.

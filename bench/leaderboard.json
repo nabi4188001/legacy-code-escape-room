@@ -419,29 +419,6 @@
           "avgSeconds": 1439
         }
       }
-    },
-    {
-      "model": "thinkingmachines/inkling-2-small:free",
-      "runs": 0,
-      "errors": 1,
-      "escapes": 0,
-      "escapeRate": null,
-      "firstTryEscapes": 0,
-      "avgAttemptsWhenEscaped": null,
-      "avgTokens": null,
-      "avgSeconds": null,
-      "rooms": {
-        "01-penny-room": {
-          "runs": 0,
-          "errors": 1,
-          "escapes": 0,
-          "escapeRate": null,
-          "firstTryEscapes": 0,
-          "avgAttemptsWhenEscaped": null,
-          "avgTokens": null,
-          "avgSeconds": null
-        }
-      }
     }
   ]
 }
